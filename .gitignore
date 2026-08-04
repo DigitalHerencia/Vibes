@@ -1,6 +1,39 @@
-.env
-.env.local
-.env.*.local
+# Environment and provider-local state
+.env*
+!.env.example
+**/.env*
+!**/.env.example
+/.clerk/
+/.vercel/
+/.stripe/
+/.neon/
+/.supabase/
+/.wrangler/
+
+# Credentials, key stores, local databases, and dumps
+**/keyless.json
+**/*service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.backup
+
+# Generated release archives
+*.zip
+*.tar
+*.tgz
+*.tar.gz
+*.7z
+*.rar
+
+# Framework, test, and package output
 .next/
 coverage/
 dist/
@@ -10,6 +43,3 @@ playwright-report/
 test-results/
 prisma/generated/
 *.tsbuildinfo
-
-# clerk configuration (can include secrets)
-/.clerk/
