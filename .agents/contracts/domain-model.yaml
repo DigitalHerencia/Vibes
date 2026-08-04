@@ -9,11 +9,16 @@ current_models:
   - Project
   - AuditEvent
   - ProviderWebhookEvent
+  - BillingCustomer
+  - ProviderCustomerBinding
+  - BillingSubscription
+  - BillingSubscriptionItem
+  - BillingEntitlement
 identity:
   provider: clerk
   local_model: User
 authorization:
-  current_scope: organization tenant and tenant-owned Project resources
+  current_scope: organization tenant, tenant-owned Project resources, and local billing entitlements
   membership_model: Membership
   role_model: OrganizationRole
   capability_source: lib/authz/capabilities.ts
@@ -26,3 +31,4 @@ tenant:
   rls_implemented: true
 known_gaps:
   - live Clerk configuration and authenticated browser journeys require separate provider-backed verification
+  - live Stripe products, price, portal configuration, webhook endpoint, and journeys require separate provider-backed verification

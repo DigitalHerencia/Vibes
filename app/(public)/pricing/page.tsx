@@ -7,25 +7,24 @@ export default function PricingPage() {
       <PageHero
         eyebrow="Template economics"
         title="Bring your pricing model."
-        description="The starter ships with product boundaries, not a billing product. Add Stripe or another provider under lib/providers when the business model is known."
+        description="The starter includes a tenant-owned Stripe subscription foundation for one server-configured recurring plan."
       />
       <ProcessPanel
         title="Billing boundaries"
         steps={[
           {
-            title: "No hidden billing",
-            description:
-              "No subscription, checkout, or invoice paths are generated until the app needs them.",
+            title: "Hosted billing",
+            description: "Checkout and subscription management stay on Stripe-hosted surfaces.",
           },
           {
             title: "Provider isolated",
             description:
-              "Payment SDK calls belong behind provider adapters, never in pages or components.",
+              "Stripe SDK calls stay behind provider adapters, never in pages or components.",
           },
           {
             title: "State first",
             description:
-              "Billing DTOs should expose safe status and references, not raw provider objects.",
+              "Verified webhooks normalize local subscription and entitlement state; redirects grant nothing.",
           },
         ]}
       />

@@ -88,6 +88,86 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
         },
       ],
     })
+    await admin.billingCustomer.createMany({
+      data: [
+        {
+          id: "billing_customer_a",
+          organizationId: organizationA,
+          stripeCustomerId: "cus_rls_a",
+          updatedAt: new Date(),
+        },
+        {
+          id: "billing_customer_b",
+          organizationId: organizationB,
+          stripeCustomerId: "cus_rls_b",
+          updatedAt: new Date(),
+        },
+      ],
+    })
+    await admin.billingSubscription.createMany({
+      data: [
+        {
+          id: "billing_subscription_a",
+          organizationId: organizationA,
+          billingCustomerId: "billing_customer_a",
+          stripeSubscriptionId: "sub_rls_a",
+          status: "active",
+          stripePriceId: "price_core",
+          providerCreatedAt: new Date(),
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "billing_subscription_b",
+          organizationId: organizationB,
+          billingCustomerId: "billing_customer_b",
+          stripeSubscriptionId: "sub_rls_b",
+          status: "active",
+          stripePriceId: "price_core",
+          providerCreatedAt: new Date(),
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    })
+    await admin.billingSubscriptionItem.createMany({
+      data: [
+        {
+          id: "billing_item_a",
+          billingSubscriptionId: "billing_subscription_a",
+          stripeSubscriptionItemId: "si_rls_a",
+          stripePriceId: "price_core",
+          updatedAt: new Date(),
+        },
+        {
+          id: "billing_item_b",
+          billingSubscriptionId: "billing_subscription_b",
+          stripeSubscriptionItemId: "si_rls_b",
+          stripePriceId: "price_core",
+          updatedAt: new Date(),
+        },
+      ],
+    })
+    await admin.billingEntitlement.createMany({
+      data: [
+        {
+          id: "billing_entitlement_a",
+          organizationId: organizationA,
+          billingSubscriptionId: "billing_subscription_a",
+          key: "core",
+          active: true,
+          updatedAt: new Date(),
+        },
+        {
+          id: "billing_entitlement_b",
+          organizationId: organizationB,
+          billingSubscriptionId: "billing_subscription_b",
+          key: "core",
+          active: true,
+          updatedAt: new Date(),
+        },
+      ],
+    })
 
     const runtimeUrl = new URL(adminUrl)
     runtimeUrl.username = "vibes_test_runtime"
@@ -132,6 +212,8 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
 
   it("fails closed when tenant context is absent and does not leak it after commit", async () => {
     await expect(runtime.project.findMany()).resolves.toEqual([])
+    await expect(runtime.billingCustomer.findMany()).resolves.toEqual([])
+    await expect(runtime.billingSubscriptionItem.findMany()).resolves.toEqual([])
     await expect(
       runtime.project.create({
         data: {
@@ -155,6 +237,12 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
         organizations: await tx.organization.findMany({ select: { id: true } }),
         memberships: await tx.membership.findMany({ select: { organizationId: true } }),
         projects: await tx.project.findMany({ select: { organizationId: true } }),
+        billingCustomers: await tx.billingCustomer.findMany({ select: { organizationId: true } }),
+        billingSubscriptions: await tx.billingSubscription.findMany({
+          select: { organizationId: true },
+        }),
+        billingItems: await tx.billingSubscriptionItem.findMany({ select: { id: true } }),
+        entitlements: await tx.billingEntitlement.findMany({ select: { organizationId: true } }),
       }),
       undefined,
       runtime
@@ -163,6 +251,10 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
     expect(result.organizations).toEqual([{ id: organizationA }])
     expect(result.memberships).toEqual([{ organizationId: organizationA }])
     expect(result.projects).toEqual([{ organizationId: organizationA }])
+    expect(result.billingCustomers).toEqual([{ organizationId: organizationA }])
+    expect(result.billingSubscriptions).toEqual([{ organizationId: organizationA }])
+    expect(result.billingItems).toEqual([{ id: "billing_item_a" }])
+    expect(result.entitlements).toEqual([{ organizationId: organizationA }])
   })
 
   it("permits same-tenant DML while keeping audit records immutable", async () => {
@@ -241,6 +333,31 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
           tx.project.updateMany({
             where: { organizationId: organizationB },
             data: { name: "Cross update" },
+          }),
+        undefined,
+        runtime
+      )
+    ).resolves.toEqual({ count: 0 })
+
+    await expect(
+      withTenantContext(
+        organizationA,
+        (tx) =>
+          tx.billingEntitlement.create({
+            data: { organizationId: organizationB, key: "cross", active: true },
+          }),
+        undefined,
+        runtime
+      )
+    ).rejects.toThrow()
+
+    await expect(
+      withTenantContext(
+        organizationA,
+        (tx) =>
+          tx.billingEntitlement.updateMany({
+            where: { organizationId: organizationB },
+            data: { active: false },
           }),
         undefined,
         runtime

@@ -41,10 +41,23 @@ enum AuditActorType {
   user
   system
   clerk
+  stripe
 }
 
 enum WebhookProvider {
   clerk
+  stripe
+}
+
+enum BillingSubscriptionStatus {
+  trialing
+  active
+  incomplete
+  incomplete_expired
+  past_due
+  canceled
+  unpaid
+  paused
 }
 
 enum ProviderWebhookStatus {
@@ -93,6 +106,10 @@ model Organization {
   invitations     OrganizationInvitation[]
   projects        Project[]
   auditEvents     AuditEvent[]
+  billingCustomer BillingCustomer?
+  billingSubscription BillingSubscription?
+  billingEntitlements BillingEntitlement[]
+  providerCustomerBindings ProviderCustomerBinding[]
 
   @@index([status])
   @@index([updatedAt])
@@ -221,4 +238,94 @@ model ProviderWebhookEvent {
   @@index([status, processingStartedAt])
   @@index([receivedAt])
   @@map("provider_webhook_events")
+}
+
+model BillingCustomer {
+  id               String @id @default(cuid())
+  organizationId   String @unique
+  stripeCustomerId String @unique @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscription BillingSubscription?
+
+  @@index([organizationId])
+  @@map("billing_customers")
+}
+
+model ProviderCustomerBinding {
+  id                 String @id @default(cuid())
+  provider           WebhookProvider
+  providerCustomerId String @db.VarChar(255)
+  organizationId     String
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerCustomerId])
+  @@index([organizationId])
+  @@map("provider_customer_bindings")
+}
+
+model BillingSubscription {
+  id                   String                    @id @default(cuid())
+  organizationId       String                    @unique
+  billingCustomerId    String                    @unique
+  stripeSubscriptionId String                    @unique @db.VarChar(255)
+  status               BillingSubscriptionStatus
+  stripePriceId        String                    @db.VarChar(255)
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean                   @default(false)
+  providerCreatedAt    DateTime
+  providerUpdatedAt    DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization  Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  billingCustomer BillingCustomer          @relation(fields: [billingCustomerId], references: [id], onDelete: Cascade)
+  items           BillingSubscriptionItem[]
+  entitlements    BillingEntitlement[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("billing_subscriptions")
+}
+
+model BillingSubscriptionItem {
+  id                       String @id @default(cuid())
+  billingSubscriptionId    String
+  stripeSubscriptionItemId String @unique @db.VarChar(255)
+  stripePriceId            String @db.VarChar(255)
+  quantity                 Int    @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscription BillingSubscription @relation(fields: [billingSubscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([billingSubscriptionId])
+  @@map("billing_subscription_items")
+}
+
+model BillingEntitlement {
+  id                    String  @id @default(cuid())
+  organizationId        String
+  billingSubscriptionId String?
+  key                   String  @db.VarChar(80)
+  active                Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscription BillingSubscription? @relation(fields: [billingSubscriptionId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, key])
+  @@index([organizationId, active])
+  @@index([billingSubscriptionId])
+  @@map("billing_entitlements")
 }
