@@ -15,14 +15,31 @@ This template is generic SaaS branded. Vouch remains the source inspiration for 
 
 ## Start
 
+Node.js 24 and pnpm 11.1.1 are the repository toolchain. Vercel reads the Node major from `package.json`; local version managers and CI read the exact release from `.node-version`.
+
+### Windows (PowerShell)
+
 ```powershell
-pnpm install
+corepack enable
+corepack install
+pnpm install --frozen-lockfile
 Copy-Item .env.example .env.local
-pnpm prisma:generate
+pnpm db:generate
 pnpm dev
 ```
 
-Set these values before running protected routes or Prisma-backed actions:
+### Linux and macOS
+
+```sh
+corepack enable
+corepack install
+pnpm install --frozen-lockfile
+cp .env.example .env.local
+pnpm db:generate
+pnpm dev
+```
+
+Installation, Prisma client generation, schema validation, static checks, unit tests, contract tests, and the production build do not require live provider credentials. Set these values before protected routes, database operations, or provider-backed actions:
 
 ```txt
 DATABASE_URL
@@ -91,19 +108,20 @@ Use the files in `.agents/` as the source of truth for implementation boundaries
 ## Validation
 
 ```powershell
-pnpm prisma:validate
-pnpm typegen
-pnpm lint
-pnpm typecheck
-pnpm test
+pnpm db:generate
+pnpm db:validate
+pnpm validate:fast
 pnpm validate
+pnpm validate:ci
 ```
 
-Run Playwright when a dev server can use real Clerk keys:
+`pnpm validate:ci` is the credential-free clean-clone gate. Run the release gate only when a test environment has real provider credentials:
 
 ```powershell
-pnpm test:e2e
+pnpm validate:release
 ```
+
+Database mutation commands remain explicit: `pnpm db:migrate` creates development migrations, `pnpm db:deploy` applies committed migrations, and `pnpm db:seed` runs the configured seed. Never run them against production without an approved deployment gate.
 
 ## Mock Pages
 

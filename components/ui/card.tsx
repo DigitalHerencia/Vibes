@@ -16,11 +16,12 @@ export const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 )
 CardHeader.displayName = "CardHeader"
 
-export const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn("text-2xl", className)} {...props} />
-  )
-)
+export const CardTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h3 ref={ref} className={cn("text-2xl", className)} {...props} />
+))
 CardTitle.displayName = "CardTitle"
 
 export const CardDescription = React.forwardRef<

@@ -8,11 +8,13 @@ const questions = [
   },
   {
     question: "Where do mutations live?",
-    answer: "Internal app writes use Server Actions under lib/actions. API routes are reserved for webhooks.",
+    answer:
+      "Internal app writes use Server Actions under lib/actions. API routes are reserved for webhooks.",
   },
   {
     question: "Can public pages compose components directly?",
-    answer: "Yes, static public pages can compose blocks directly when they do not call backend operations.",
+    answer:
+      "Yes, static public pages can compose blocks directly when they do not call backend operations.",
   },
 ]
 

@@ -18,7 +18,11 @@ export function PresentationShell({
   return (
     <div className="min-h-dvh">
       <PresentationHeader />
-      <main className={withMobileBottomNav ? "mx-auto w-full max-w-7xl" : "mx-auto w-full max-w-7xl pb-0"}>
+      <main
+        className={
+          withMobileBottomNav ? "mx-auto w-full max-w-7xl" : "mx-auto w-full max-w-7xl pb-0"
+        }
+      >
         {children}
       </main>
       <PublicFooter />

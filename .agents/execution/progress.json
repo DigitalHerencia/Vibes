@@ -11,6 +11,17 @@
         "Reworked create Vouch draft and confirm flow UI",
         "Validated contracts, typecheck, contract tests, and targeted status badge test"
       ]
+    },
+    {
+      "id": "ISSUE-3",
+      "status": "in_review",
+      "completed": [
+        "Pinned the Node and pnpm toolchain",
+        "Made Prisma generation and validation credential-free",
+        "Canonicalized the Clerk webhook at /api/clerk/webhooks",
+        "Restored unresolved committed UI and block imports",
+        "Passed the credential-free validate:ci gate"
+      ]
     }
   ]
 }

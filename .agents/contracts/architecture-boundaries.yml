@@ -20,7 +20,22 @@ doctrine:
 terms:
   namespace:
     definition: "Stable naming label used across folders and files."
-    examples: [auth, authz, billing, dashboard, marketing, navigation, notifications, ops, payments, settings, system, user, verification]
+    examples:
+      [
+        auth,
+        authz,
+        billing,
+        dashboard,
+        marketing,
+        navigation,
+        notifications,
+        ops,
+        payments,
+        settings,
+        system,
+        user,
+        verification,
+      ]
   domain:
     definition: "Capability that owns rules, state, lifecycle, persistence, provider coordination, security, or workflow truth."
     examples: [auth, authz, billing, payments, verification, orders, projects, audit]
@@ -54,7 +69,16 @@ owners:
     forbids: [route_chrome, domain_operations, feature_logic]
   globals_css:
     paths: ["app/globals.css"]
-    owns: [tokens, tailwind_theme_mappings, typography_taxonomy, global_background, base_reset, focus_policy, reduced_motion]
+    owns:
+      [
+        tokens,
+        tailwind_theme_mappings,
+        typography_taxonomy,
+        global_background,
+        base_reset,
+        focus_policy,
+        reduced_motion,
+      ]
     forbids: [page_specific_layout, route_chrome, business_logic]
   route_group_layout:
     paths: ["app/**/layout.tsx"]
@@ -66,12 +90,40 @@ owners:
     forbids: [business_mutation, raw_db_access, provider_reconciliation]
   page:
     paths: ["app/**/page.tsx"]
-    owns: [route_endpoint_selection, params_boundary_handoff, one_feature_render, static_public_composition, suspense_wrapper]
-    forbids: [db_queries, provider_business_logic, protected_dto_shaping, form_state_orchestration, mutations]
+    owns:
+      [
+        route_endpoint_selection,
+        params_boundary_handoff,
+        one_feature_render,
+        static_public_composition,
+        suspense_wrapper,
+      ]
+    forbids:
+      [
+        db_queries,
+        provider_business_logic,
+        protected_dto_shaping,
+        form_state_orchestration,
+        mutations,
+      ]
   feature:
     paths: ["features/**/*"]
-    owns: [feature_orchestration, fetcher_calls, action_wiring, dto_branching, suspense_boundaries, client_interaction_state]
-    forbids: [primitive_ui_implementation, raw_sql, provider_sdk_business_logic, reusable_visual_library_behavior]
+    owns:
+      [
+        feature_orchestration,
+        fetcher_calls,
+        action_wiring,
+        dto_branching,
+        suspense_boundaries,
+        client_interaction_state,
+      ]
+    forbids:
+      [
+        primitive_ui_implementation,
+        raw_sql,
+        provider_sdk_business_logic,
+        reusable_visual_library_behavior,
+      ]
   block:
     paths: ["components/blocks/**/*", "components/**/blocks/**/*"]
     owns: [section_assembly, component_composition, repeated_page_surfaces]
@@ -97,12 +149,22 @@ owners:
   action:
     paths: ["lib/actions/**/*Actions.ts"]
     owns: [protected_writes]
-    sequence: [authenticate, authorize, validate, transaction_or_provider_operation, audit_or_log, revalidate_or_redirect, typed_result]
+    sequence:
+      [
+        authenticate,
+        authorize,
+        validate,
+        transaction_or_provider_operation,
+        audit_or_log,
+        revalidate_or_redirect,
+        typed_result,
+      ]
     forbids: [raw_provider_return_to_ui, raw_db_model_return_to_ui]
   fetcher:
     paths: ["lib/fetchers/**/*Fetchers.ts"]
     owns: [protected_reads]
-    sequence: [authenticate, authorize, minimal_select, map_to_dto, cache_policy, transport_safe_return]
+    sequence:
+      [authenticate, authorize, minimal_select, map_to_dto, cache_policy, transport_safe_return]
     forbids: [mutation, provider_reconciliation]
   db_client:
     paths: ["lib/db/client.ts"]
@@ -127,7 +189,16 @@ owners:
   webhook:
     paths: ["app/api/**/route.ts"]
     owns: [provider_event_ingress, signature_verification, idempotent_reconciliation]
-    sequence: [read_raw_body, verify_signature, parse_event_envelope, classify_event_type, record_provider_event_id, process_idempotently, provider_compatible_response]
+    sequence:
+      [
+        read_raw_body,
+        verify_signature,
+        parse_event_envelope,
+        classify_event_type,
+        record_provider_event_id,
+        process_idempotently,
+        provider_compatible_response,
+      ]
     forbids: [browser_user_session_dependency, ui_fetchers, non_idempotent_writes]
   schemas:
     paths: ["schemas/**/*Schemas.ts"]
@@ -184,7 +255,8 @@ naming:
     examples: ["lib/authz/assertions.ts", "lib/authz/capabilities.ts"]
   react_files:
     style: lowercase-hyphenated
-    examples: ["authz-feature.tsx", "authz-feature.client.tsx", "authz-skeleton.tsx", "authz-table.tsx"]
+    examples:
+      ["authz-feature.tsx", "authz-feature.client.tsx", "authz-skeleton.tsx", "authz-table.tsx"]
 
 decision_points:
   ask_user_when_unclear:

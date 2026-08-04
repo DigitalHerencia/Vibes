@@ -46,7 +46,10 @@ function mapProjectMembershipDTO(
   }
 }
 
-export function mapProjectDetailDTO(project: ProjectDetailRecord, userId: string): ProjectDetailDTO {
+export function mapProjectDetailDTO(
+  project: ProjectDetailRecord,
+  userId: string
+): ProjectDetailDTO {
   return {
     id: project.id,
     ownerId: project.ownerId,

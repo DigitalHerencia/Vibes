@@ -19,7 +19,9 @@ export function AuthShell({ children }: AuthShellProps) {
           </p>
         </div>
       </section>
-      <section className="flex min-h-dvh items-center justify-center px-6 py-12">{children}</section>
+      <section className="flex min-h-dvh items-center justify-center px-6 py-12">
+        {children}
+      </section>
     </main>
   )
 }

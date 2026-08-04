@@ -20,19 +20,19 @@ The current source inventory contains 42 `app/` files, 68 `components/` files, 7
 
 ## Validation ledger
 
-| Command | Result | Evidence / limitation |
-|---|---|---|
-| `git status --short --branch` | passed | Sanitized baseline was clean and tracked `origin/main` before the Issue branch was created. |
-| `git ls-remote --heads origin main` | passed | Remote `main` resolved to sanitized import `4f94985`. |
-| `pwsh -NoProfile -File scripts/Invoke-SecretScan.ps1 -Mode Worktree` | passed | No rejected provider path or credential signature was found; match values are never emitted. |
-| `pwsh -NoProfile -File scripts/Invoke-SecretScan.ps1 -Mode History` | passed | Every blob reachable from local branches/tags passed at the time recorded. |
-| `pwsh -NoProfile -File scripts/Test-SecretScanner.ps1` | passed | A temporary synthetic Clerk-shaped fixture was rejected and deleted. No live value was used. |
-| `pwsh -NoProfile -File scripts/Test-RepositorySecurity.ps1 -ArchiveRef <staged-tree-id>` | passed | Worktree, all-ref history, generated archive, and temporary synthetic-fixture gates passed against the staged candidate tree. |
-| `pnpm --version` | could not run | The provisioned pnpm launcher points to a missing local executable; package validation was not claimed. |
-| Codex Security scan | intentionally not run | Repository owner directed this task to skip that external scanner. Repository-native deterministic checks remain in scope. |
-| GitHub native secret scanning and push protection enablement | could not run | GitHub's repository API returned HTTP 422: secret scanning is not available for this private repository. The read-only Actions gate remains enabled in source. |
-| Provider credential rotation and audit-log review | owner action; not run | Requires provider-console authority and may be irreversible. |
-| Unknown upstream history/archive scan | unavailable | No upstream Git history was supplied or imported; external copies are outside this repository's evidence boundary. |
+| Command                                                                                  | Result                | Evidence / limitation                                                                                                                                          |
+| ---------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `git status --short --branch`                                                            | passed                | Sanitized baseline was clean and tracked `origin/main` before the Issue branch was created.                                                                    |
+| `git ls-remote --heads origin main`                                                      | passed                | Remote `main` resolved to sanitized import `4f94985`.                                                                                                          |
+| `pwsh -NoProfile -File scripts/Invoke-SecretScan.ps1 -Mode Worktree`                     | passed                | No rejected provider path or credential signature was found; match values are never emitted.                                                                   |
+| `pwsh -NoProfile -File scripts/Invoke-SecretScan.ps1 -Mode History`                      | passed                | Every blob reachable from local branches/tags passed at the time recorded.                                                                                     |
+| `pwsh -NoProfile -File scripts/Test-SecretScanner.ps1`                                   | passed                | A temporary synthetic Clerk-shaped fixture was rejected and deleted. No live value was used.                                                                   |
+| `pwsh -NoProfile -File scripts/Test-RepositorySecurity.ps1 -ArchiveRef <staged-tree-id>` | passed                | Worktree, all-ref history, generated archive, and temporary synthetic-fixture gates passed against the staged candidate tree.                                  |
+| `pnpm --version`                                                                         | could not run         | The provisioned pnpm launcher points to a missing local executable; package validation was not claimed.                                                        |
+| Codex Security scan                                                                      | intentionally not run | Repository owner directed this task to skip that external scanner. Repository-native deterministic checks remain in scope.                                     |
+| GitHub native secret scanning and push protection enablement                             | could not run         | GitHub's repository API returned HTTP 422: secret scanning is not available for this private repository. The read-only Actions gate remains enabled in source. |
+| Provider credential rotation and audit-log review                                        | owner action; not run | Requires provider-console authority and may be irreversible.                                                                                                   |
+| Unknown upstream history/archive scan                                                    | unavailable           | No upstream Git history was supplied or imported; external copies are outside this repository's evidence boundary.                                             |
 
 ## Current release disposition
 

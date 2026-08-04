@@ -2,7 +2,7 @@ import "server-only"
 
 import { auth, currentUser } from "@clerk/nextjs/server"
 
-import { prisma } from "@/lib/db/prisma"
+import { getPrisma } from "@/lib/db/prisma"
 import type { AuthenticatedUserContext, LocalUserContext } from "@/types/authTypes"
 
 function mapLocalUser(user: {
@@ -24,6 +24,7 @@ function mapLocalUser(user: {
 export async function getCurrentUserContext(): Promise<AuthenticatedUserContext | null> {
   const { userId } = await auth()
   if (!userId) return null
+  const prisma = getPrisma()
 
   const existingUser = await prisma.user.findUnique({
     where: { clerkUserId: userId },

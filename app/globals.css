@@ -1,5 +1,31 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 24s linear infinite;
+}
+
+[data-speed="slow"] > .marquee-track {
+  animation-duration: 36s;
+}
+
+[data-speed="fast"] > .marquee-track {
+  animation-duration: 14s;
+}
+
+[data-direction="right"] > .marquee-track {
+  animation-direction: reverse;
+}
+
+[data-pause-on-hover="true"]:hover > .marquee-track {
+  animation-play-state: paused;
+}
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 

@@ -10,7 +10,9 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
           <div className="max-w-xl space-y-5 border bg-card p-8">
             <p className="eyebrow text-primary">Error</p>
             <h1>Something failed.</h1>
-            <p className="text-muted-foreground">The app can retry this render without changing state.</p>
+            <p className="text-muted-foreground">
+              The app can retry this render without changing state.
+            </p>
             <Button type="button" onClick={reset}>
               Retry
             </Button>

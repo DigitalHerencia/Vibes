@@ -257,7 +257,7 @@ Clerk must not decide:
 
 The Clerk webhook handler must remain a webhook handler.
 
-Do not rename or reframe it away from webhook-handler semantics.
+Keep `/api/clerk/webhooks` as the canonical provider webhook route.
 
 ## Confirmation Pattern
 
@@ -359,7 +359,7 @@ External provider surfaces are not Vouch pages.
 Only provider webhook routes are allowed:
 
 ```txt
-app/api/clerk/webhook-handler/route.ts
+app/api/clerk/webhooks/route.ts
 app/api/stripe/webhooks/route.ts
 ```
 

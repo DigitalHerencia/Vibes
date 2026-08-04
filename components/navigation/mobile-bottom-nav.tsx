@@ -1,63 +1,18 @@
 "use client"
 
-import {
-  CreditCard,
-  FileText,
-  HelpCircle,
-  Home,
-  Plus,
-  Shield,
-  ShieldCheck,
-  User,
-  type LucideIcon,
-} from "lucide-react"
+import { FileText, HelpCircle, Home, ShieldCheck, type LucideIcon } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
 
-import { UserMenu } from "@/components/navigation/user-menu"
-import { Button } from "@/components/ui/button"
-import { ProtocolDrawer } from "@/components/vouches/protocol-drawer"
-import { vouchPageCopy } from "@/content/vouches"
-
-type WarningCopy = {
-  title: string
-  consequence: string
-  context: string
-  finePrint: string
-}
-
-type BaseItem = {
+export interface MobileBottomNavItem {
   label: string
-  icon: LucideIcon
-  primary?: boolean
-}
-
-type LinkItem = BaseItem & {
-  kind: "link"
   href: string
+  icon: LucideIcon
 }
 
-type ActionItem = BaseItem & {
-  kind: "action"
-  warning: WarningCopy
-  action: (formData: FormData) => void | Promise<void>
-}
-
-type AccountItem = BaseItem & {
-  kind: "account"
-}
-
-type MobileBottomNavItem = LinkItem | ActionItem | AccountItem
-
-type MobileBottomNavProps = {
+export interface MobileBottomNavProps {
   items: readonly MobileBottomNavItem[]
   "aria-label"?: string
-}
-
-type TenantMobileBottomNavProps = {
-  connectAction: (formData: FormData) => void | Promise<void>
-  paymentAction: (formData: FormData) => void | Promise<void>
 }
 
 function isActivePath(pathname: string, href: string) {
@@ -69,133 +24,36 @@ export function MobileBottomNav({
   "aria-label": ariaLabel = "Mobile navigation",
 }: MobileBottomNavProps) {
   const pathname = usePathname()
-  const [pendingAction, setPendingAction] = useState<ActionItem | null>(null)
-
   return (
-    <>
-      <nav
-        aria-label={ariaLabel}
-        className={`fixed inset-x-0 bottom-0 z-50 grid h-14 w-full items-center border-t border-neutral-400 bg-black px-1 pb-[env(safe-area-inset-bottom)] md:hidden ${
-          items.length >= 5 ? "grid-cols-5" : "grid-cols-4"
-        }`}
-      >
-        {items.map((item) => {
-          const Icon = item.icon
-          const isActive = item.kind === "link" && isActivePath(pathname, item.href)
-
-          const itemClassName = isActive
-            ? "flex h-full min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] leading-none font-semibold text-white uppercase"
-            : "flex h-full min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] leading-none font-semibold text-neutral-400 uppercase"
-
-          const iconClassName = item.primary
-            ? "grid size-5 shrink-0 place-items-center text-blue-600"
-            : "grid size-5 shrink-0 place-items-center text-white"
-
-          const content = (
-            <>
-              <span className={iconClassName}>
-                {item.kind === "account" ? (
-                  <UserMenu size="compact" />
-                ) : (
-                  <Icon className="size-4" />
-                )}
-              </span>
-              <span className="max-w-full truncate">{item.label}</span>
-            </>
-          )
-
-          if (item.kind === "link") {
-            return (
-              <Link key={item.href} href={item.href} className={itemClassName}>
-                {content}
-              </Link>
-            )
-          }
-
-          if (item.kind === "action") {
-            return (
-              <button
-                key={item.label}
-                type="button"
-                className={itemClassName}
-                onClick={() => setPendingAction(item)}
-              >
-                {content}
-              </button>
-            )
-          }
-
-          return (
-            <div key={item.label} className={itemClassName}>
-              {content}
-            </div>
-          )
-        })}
-      </nav>
-
-      {pendingAction ? (
-        <ProtocolDrawer
-          open
-          onOpenChange={(open) => {
-            if (!open) setPendingAction(null)
-          }}
-          title={pendingAction.warning.title}
-          consequence={pendingAction.warning.consequence}
-          context={pendingAction.warning.context}
-          finePrint={pendingAction.warning.finePrint}
-          primary={
-            <form action={pendingAction.action}>
-              <Button type="submit" className="w-full">
-                Continue
-              </Button>
-            </form>
-          }
-        />
-      ) : null}
-    </>
+    <nav
+      aria-label={ariaLabel}
+      className="fixed inset-x-0 bottom-0 z-50 grid h-14 grid-cols-4 border-t border-neutral-400 bg-black md:hidden"
+    >
+      {items.map((item) => {
+        const Icon = item.icon
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isActivePath(pathname, item.href) ? "page" : undefined}
+            className="flex flex-col items-center justify-center gap-1 text-[10px] font-semibold text-neutral-400 uppercase aria-[current=page]:text-white"
+          >
+            <Icon className="size-4" />
+            {item.label}
+          </Link>
+        )
+      })}
+    </nav>
   )
 }
 
 const publicItems = [
-  { kind: "link", href: "/", label: "Home", icon: Home },
-  { kind: "link", href: "/pricing", label: "Price", icon: FileText },
-  { kind: "link", href: "/faq", label: "FAQ", icon: HelpCircle },
-  { kind: "link", href: "/sign-in", label: "Sign", icon: ShieldCheck },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/pricing", label: "Price", icon: FileText },
+  { href: "/faq", label: "FAQ", icon: HelpCircle },
+  { href: "/sign-in", label: "Sign", icon: ShieldCheck },
 ] satisfies readonly MobileBottomNavItem[]
 
 export function PublicMobileBottomNav() {
   return <MobileBottomNav items={publicItems} aria-label="Public mobile navigation" />
-}
-
-export function TenantMobileBottomNav({
-  connectAction,
-  paymentAction,
-}: TenantMobileBottomNavProps) {
-  const tenantItems = [
-    { kind: "link", href: "/dashboard", label: "Dash", icon: Home },
-    {
-      kind: "link",
-      href: "/vouches/new",
-      label: "New",
-      icon: Plus,
-      primary: true,
-    },
-    {
-      kind: "action",
-      label: "Stripe",
-      icon: Shield,
-      action: connectAction,
-      warning: vouchPageCopy.providerRedirects.connect,
-    },
-    {
-      kind: "action",
-      label: "Pay",
-      icon: CreditCard,
-      action: paymentAction,
-      warning: vouchPageCopy.providerRedirects.payment,
-    },
-    { kind: "account", label: "Me", icon: User },
-  ] satisfies readonly MobileBottomNavItem[]
-
-  return <MobileBottomNav items={tenantItems} aria-label="Tenant mobile navigation" />
 }

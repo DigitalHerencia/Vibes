@@ -40,6 +40,11 @@
       "command": "git diff --check",
       "status": "passed",
       "reason": "No whitespace errors were reported in the final diff."
+    },
+    {
+      "command": "corepack pnpm validate:ci",
+      "status": "passed",
+      "reason": "Prisma generation and validation, formatting, linting, type checking, contract parsing, 10 unit tests, 6 contract tests, and the production build passed without database or Clerk credentials."
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 import type { Prisma } from "@/prisma/generated/prisma/client"
 
-import { prisma } from "@/lib/db/prisma"
+import { getPrisma } from "@/lib/db/prisma"
 import { upsertUserFromClerkTx } from "@/lib/db/transactions/authTransactions"
 
 type ClerkWebhookUserData = {
@@ -48,6 +48,7 @@ export async function recordProviderWebhookReceived(input: {
   eventType: string
   safeMetadata?: Prisma.InputJsonValue
 }) {
+  const prisma = getPrisma()
   const existing = await prisma.providerWebhookEvent.findUnique({
     where: {
       provider_providerEventId: {
@@ -74,6 +75,7 @@ export async function recordProviderWebhookReceived(input: {
 }
 
 export async function processClerkWebhookEvent(event: ClerkWebhookEvent, providerEventId: string) {
+  const prisma = getPrisma()
   const ledger = await recordProviderWebhookReceived({
     providerEventId,
     eventType: event.type,
