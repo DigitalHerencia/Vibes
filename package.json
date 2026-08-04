@@ -42,6 +42,8 @@
     "db:studio": "prisma studio",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
+    "security:scan": "pwsh -NoProfile -File scripts/Invoke-SecretScan.ps1 -Mode Worktree",
+    "security:verify": "pwsh -NoProfile -File scripts/Test-RepositorySecurity.ps1",
     "validate:contracts": "node scripts/validate-contracts.mjs",
     "validate": "pnpm lint && pnpm typecheck && pnpm prisma:validate && pnpm validate:contracts && pnpm test",
     "validate:all": "pnpm validate && pnpm test:e2e",
