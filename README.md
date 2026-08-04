@@ -81,7 +81,7 @@ app/api/stripe/webhooks    Provider webhook only
 app/api/stripe/connect/webhooks  Optional Connect webhook only
 ```
 
-The repository also currently compiles presentation/reference routes from `app/(presentation)` and the `D1`, `pA`-`pC`, and `tA`-`tC` examples. They are accurately recorded as a known isolation gap in `.agents/contracts/routes.yaml`; ADR-0009 defines the intended boundary without claiming it is already implemented.
+The typed presentation catalog lives at `/catalog` in development. The `app/(presentation)` reference routes are no-index and fail closed in production unless `PRESENTATION_CATALOG_ENABLED=true`; normal product deployments should leave it disabled. Vouch-specific catalog copy and fixtures live under `reference-implementations/vouch` and remain explicitly non-universal.
 
 ## RBAC Model
 

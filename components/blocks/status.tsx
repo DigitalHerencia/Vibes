@@ -46,6 +46,7 @@ import {
   TimelineTime,
   TimelineTitle,
 } from "@/components/ui/timeline"
+import { vouchPresentationContent } from "@/reference-implementations/vouch/presentation-content"
 import type {
   VouchCreationActionResult,
   VouchCreationDraft,
@@ -388,11 +389,13 @@ function firstFieldError(
 }
 
 function FieldShell({
+  id,
   label,
   children,
   description,
   error,
 }: {
+  id: string
   label: string
   children: React.ReactNode
   description?: string | undefined
@@ -400,14 +403,21 @@ function FieldShell({
 }) {
   return (
     <div className="min-w-0 space-y-2">
-      <Label className="text-[11px] font-black tracking-widest text-neutral-300 uppercase">
+      <Label
+        htmlFor={id}
+        className="text-[11px] font-black tracking-widest text-neutral-300 uppercase"
+      >
         {label}
       </Label>
       {children}
       {description ? (
         <p className="text-[12px] leading-5 font-semibold text-neutral-400">{description}</p>
       ) : null}
-      {error ? <p className="text-[12px] leading-5 font-semibold text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-[12px] leading-5 font-semibold text-red-600">
+          {error}
+        </p>
+      ) : null}
     </div>
   )
 }
@@ -433,11 +443,11 @@ export function VouchCreationWizard({
   const fieldErrors = result?.ok === false ? result.fieldErrors : undefined
   const formError = result?.ok === false ? result.formError : null
   const preview = result?.ok ? result.data : undefined
-  const steps = [
-    { title: "Fee invoice", icon: CircleDollarSign },
-    { title: "Paylink window", icon: CalendarClock },
-    { title: "Immutable create", icon: FileCheck2 },
-  ] as const
+  const stepIcons = [CircleDollarSign, CalendarClock, FileCheck2] as const
+  const steps = vouchPresentationContent.wizard.steps.map((step, index) => ({
+    ...step,
+    icon: stepIcons[index] ?? FileCheck2,
+  }))
 
   function updateDraft(patch: Partial<VouchCreationDraft>) {
     setDraft((current) => ({ ...current, ...patch }))
@@ -490,10 +500,10 @@ export function VouchCreationWizard({
       <aside className="flex min-h-0 flex-col border-3 border-neutral-400 bg-black">
         <div className="border-b-3 border-neutral-400 p-4 md:p-5">
           <p className="text-[11px] font-black tracking-widest text-blue-600 uppercase">
-            New Vouch
+            {vouchPresentationContent.wizard.eyebrow}
           </p>
           <h1 className="mt-2 text-2xl leading-none font-black tracking-wide uppercase md:text-4xl">
-            Create status rail
+            {vouchPresentationContent.wizard.title}
           </h1>
         </div>
 
@@ -533,7 +543,9 @@ export function VouchCreationWizard({
                       {step.title}
                     </span>
                   </span>
-                  <span className="font-mono text-xs font-black">{complete ? "OK" : "..."}</span>
+                  <span className="font-mono text-xs font-black">
+                    {complete ? step.completeLabel : step.pendingLabel}
+                  </span>
                 </button>
               )
             })}
@@ -543,7 +555,7 @@ export function VouchCreationWizard({
             <Progress value={progress} className="h-3 shadow-none" />
             <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold text-neutral-400">
               <span>{Math.round(progress)}% complete</span>
-              <span className="text-right">Server state owns outcome</span>
+              <span className="text-right">{vouchPresentationContent.wizard.progressHint}</span>
             </div>
           </div>
         </div>
@@ -556,8 +568,7 @@ export function VouchCreationWizard({
               {steps[optimisticStep]?.title}
             </h2>
             <p className="mt-2 max-w-2xl text-[12px] leading-5 font-semibold text-neutral-400 md:text-sm">
-              UI only: fee math, immutable creation, provider links, idempotency keys, retries, and
-              webhook reconciliation stay on the server.
+              {vouchPresentationContent.wizard.helper}
             </p>
           </div>
 
@@ -571,11 +582,13 @@ export function VouchCreationWizard({
             {optimisticStep === 0 ? (
               <div className="grid h-full min-h-0 content-center gap-4">
                 <FieldShell
+                  id="vouch-amount"
                   label="Protected amount"
-                  description="The application fee and provider fee preview are calculated server-side before the Vouch can be created."
+                  description={vouchPresentationContent.wizard.amountDescription}
                   error={firstFieldError(fieldErrors, ["amountCents"])}
                 >
                   <Input
+                    id="vouch-amount"
                     type="number"
                     inputMode="decimal"
                     min="5"
@@ -605,10 +618,12 @@ export function VouchCreationWizard({
               <div className="grid h-full min-h-0 content-center gap-4">
                 <div className="grid gap-4 md:grid-cols-3">
                   <FieldShell
+                    id="vouch-appointment"
                     label="Appointment"
                     error={firstFieldError(fieldErrors, ["appointmentStartsAt"])}
                   >
                     <Input
+                      id="vouch-appointment"
                       type="datetime-local"
                       value={draft.appointmentStartsAt}
                       onChange={(event) => updateDraft({ appointmentStartsAt: event.target.value })}
@@ -616,10 +631,12 @@ export function VouchCreationWizard({
                     />
                   </FieldShell>
                   <FieldShell
+                    id="vouch-confirmation-opens"
                     label="Opens"
                     error={firstFieldError(fieldErrors, ["confirmationOpensAt"])}
                   >
                     <Input
+                      id="vouch-confirmation-opens"
                       type="datetime-local"
                       value={draft.confirmationOpensAt}
                       onChange={(event) => updateDraft({ confirmationOpensAt: event.target.value })}
@@ -627,10 +644,12 @@ export function VouchCreationWizard({
                     />
                   </FieldShell>
                   <FieldShell
+                    id="vouch-confirmation-expires"
                     label="Expires"
                     error={firstFieldError(fieldErrors, ["confirmationExpiresAt"])}
                   >
                     <Input
+                      id="vouch-confirmation-expires"
                       type="datetime-local"
                       value={draft.confirmationExpiresAt}
                       onChange={(event) =>
@@ -642,21 +661,14 @@ export function VouchCreationWizard({
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
-                  <ProtocolTile
-                    icon={<Link2 />}
-                    title="Paylink"
-                    body="Merchant receives the hosted payment link after fee payment and immutable create."
-                  />
-                  <ProtocolTile
-                    icon={<Database />}
-                    title="Idempotent DB"
-                    body="The feature layer should write transactionally with retry-aware idempotency keys."
-                  />
-                  <ProtocolTile
-                    icon={<RefreshCw />}
-                    title="Webhook sync"
-                    body="Stripe events reconcile payment, authorization, capture, expiration, and refund state."
-                  />
+                  {vouchPresentationContent.wizard.protocolTiles.map((tile, index) => {
+                    const icons = [
+                      <Link2 key="link" />,
+                      <Database key="db" />,
+                      <RefreshCw key="sync" />,
+                    ]
+                    return <ProtocolTile key={tile.title} icon={icons[index]} {...tile} />
+                  })}
                 </div>
               </div>
             ) : null}
@@ -680,9 +692,7 @@ export function VouchCreationWizard({
                     className="mt-1 size-5 accent-blue-600"
                   />
                   <span className="text-sm leading-6 font-semibold text-neutral-300">
-                    I understand this Vouch becomes immutable after creation data is issued. Funds
-                    release only when merchant and customer confirmations are both recorded inside
-                    the confirmation window.
+                    {vouchPresentationContent.wizard.immutableAcknowledgement}
                   </span>
                 </label>
                 {firstFieldError(fieldErrors, ["disclaimerAccepted"]) ? (
@@ -781,10 +791,10 @@ function VouchCreationCartSheet({
       >
         <SheetHeader className="border-b-3 border-neutral-400 p-5 pr-14 text-left">
           <SheetTitle className="text-2xl font-black tracking-wide uppercase">
-            Vouch cart
+            {vouchPresentationContent.wizard.cartTitle}
           </SheetTitle>
           <SheetDescription className="font-semibold">
-            Confirm the server-owned create request, then continue to the hosted fee invoice.
+            {vouchPresentationContent.wizard.cartDescription}
           </SheetDescription>
         </SheetHeader>
 
@@ -816,22 +826,9 @@ function VouchCreationCartSheet({
 
             <section className="grid gap-3 border-3 border-neutral-400 bg-neutral-900 p-4">
               <p className="text-sm font-black text-white uppercase">Create sequence</p>
-              <CartRailItem
-                label="1. Idempotent create"
-                value="Feature server action writes Vouch state transactionally with retry-safe keys."
-              />
-              <CartRailItem
-                label="2. Fee invoice"
-                value="Merchant pays application fee and Stripe fee through a hosted one-time invoice."
-              />
-              <CartRailItem
-                label="3. Immutable paylink"
-                value="After paid webhook reconciliation, the destination PaymentIntent link is issued and the Vouch becomes immutable."
-              />
-              <CartRailItem
-                label="4. Bilateral confirmation"
-                value="Merchant and customer DB writes inside the window determine capture; otherwise the intent expires or is voided."
-              />
+              {vouchPresentationContent.wizard.cartRail.map((item) => (
+                <CartRailItem key={item.label} {...item} />
+              ))}
             </section>
 
             <section className="grid gap-3 border-3 border-neutral-400 bg-black p-4">

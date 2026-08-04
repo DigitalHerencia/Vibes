@@ -1,9 +1,9 @@
 import {
-  presentationPreviewDocument,
-  presentationPreviewInitialDraft,
-  presentationPreviewTimeline,
-} from "@/components/(presentation)/presentationData"
-import { presentationContent } from "@/components/(presentation)/presentationContent"
+  vouchPreviewDocument,
+  vouchPreviewInitialDraft,
+  vouchPreviewTimeline,
+} from "@/reference-implementations/vouch/presentation-fixtures"
+import { vouchPresentationContent } from "@/reference-implementations/vouch/presentation-content"
 import {
   VouchCountdown,
   VouchStatusBadge,
@@ -18,27 +18,27 @@ export function StatusFeature() {
       <section className="grid gap-8 md:gap-16">
         <header className="max-w-3xl">
           <p className="text-[11px] font-black tracking-widest text-blue-600 uppercase">
-            {presentationContent.page.eyebrow}
+            {vouchPresentationContent.page.eyebrow}
           </p>
           <h1 className="mt-3 text-4xl leading-none font-black tracking-wide uppercase md:text-6xl">
-            {presentationContent.page.title}
+            {vouchPresentationContent.page.title}
           </h1>
           <p className="mt-4 text-sm leading-6 font-semibold text-neutral-400 md:text-base">
-            {presentationContent.page.description}
+            {vouchPresentationContent.page.description}
           </p>
         </header>
 
-        <StatusFeatureClient initialDraft={presentationPreviewInitialDraft} />
+        <StatusFeatureClient initialDraft={vouchPreviewInitialDraft} />
 
-        <VouchStatusDocument data={presentationPreviewDocument} />
-        <VouchStatusTimeline items={presentationPreviewTimeline} />
-        {presentationPreviewDocument.countdown ? (
-          <VouchCountdown {...presentationPreviewDocument.countdown} />
+        <VouchStatusDocument data={vouchPreviewDocument} />
+        <VouchStatusTimeline items={vouchPreviewTimeline} />
+        {vouchPreviewDocument.countdown ? (
+          <VouchCountdown {...vouchPreviewDocument.countdown} />
         ) : null}
         <div>
           <VouchStatusBadge
-            status={presentationPreviewDocument.status}
-            tone={presentationPreviewDocument.statusTone ?? "pending"}
+            status={vouchPreviewDocument.status}
+            tone={vouchPreviewDocument.statusTone ?? "pending"}
           />
         </div>
       </section>

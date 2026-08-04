@@ -1,7 +1,7 @@
 import type { VouchStatusDocumentData, VouchStatusTimelineItem } from "@/components/blocks/status"
 import type { VouchCreationDraft } from "@/types/presentationPreviewTypes"
 
-export const presentationPreviewTimeline: VouchStatusTimelineItem[] = [
+export const vouchPreviewTimeline: VouchStatusTimelineItem[] = [
   {
     id: "draft-created",
     title: "Draft created",
@@ -34,7 +34,7 @@ export const presentationPreviewTimeline: VouchStatusTimelineItem[] = [
   },
 ]
 
-export const presentationPreviewDocument: VouchStatusDocumentData = {
+export const vouchPreviewDocument: VouchStatusDocumentData = {
   title: "Venue lighting install",
   publicId: "VCH-DEMO-1042",
   status: "authorized",
@@ -56,18 +56,15 @@ export const presentationPreviewDocument: VouchStatusDocumentData = {
     percentRemaining: 64,
     tone: "active",
   },
-  timeline: presentationPreviewTimeline,
-  confirmations: {
-    merchantConfirmed: true,
-    customerConfirmed: false,
-  },
+  timeline: vouchPreviewTimeline,
+  confirmations: { merchantConfirmed: true, customerConfirmed: false },
   audit: [
     { label: "Provider truth", value: "Stripe current state required" },
     { label: "Capture rule", value: "Both confirmations required" },
   ],
 }
 
-export const presentationPreviewInitialDraft: Partial<VouchCreationDraft> = {
+export const vouchPreviewInitialDraft: Partial<VouchCreationDraft> = {
   amountDollars: "850.00",
   appointmentStartsAt: "2026-05-28T14:00",
   confirmationOpensAt: "2026-05-28T13:45",

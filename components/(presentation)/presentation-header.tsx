@@ -16,6 +16,7 @@ export interface PresentationHeaderProps {
 }
 
 export const defaultPresentationNavItems = [
+  { label: "Catalog", href: "/catalog" },
   { label: "Auth", href: "/auth-forms" },
   { label: "CTA", href: "/cta-section" },
   { label: "Error", href: "/error-pages" },
@@ -34,9 +35,9 @@ export function PresentationHeader({
   navItems = defaultPresentationNavItems,
 }: PresentationHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 h-21 border-b-2 border-neutral-400 bg-black">
-      <div className="mx-auto ml-40 flex h-full w-full items-center px-4 py-3">
-        <nav className="flex items-center gap-4 lg:gap-8">
+    <header className="sticky top-0 z-50 h-21 overflow-x-auto border-b-2 border-neutral-400 bg-black">
+      <div className="mx-auto flex h-full min-w-max items-center px-4 py-3">
+        <nav aria-label="Presentation catalog" className="flex items-center gap-4 lg:gap-8">
           {navItems.map((item) => (
             <Button key={item.href} variant="nav" size="nav" asChild>
               <Link href={item.href}>{item.label}</Link>

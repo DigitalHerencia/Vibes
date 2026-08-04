@@ -6,7 +6,7 @@ import {
   ProcessPanelList,
   ProcessPanelRuleGrid,
 } from "@/components/blocks/process-panel"
-import { presentationContent } from "@/components/(presentation)/presentationContent"
+import { vouchPresentationContent } from "@/reference-implementations/vouch/presentation-content"
 
 const processIcons: Record<string, LucideIcon> = {
   file: FileText,
@@ -20,12 +20,12 @@ export function ProcessPanelFeature() {
     <main className="p-8 md:p-12">
       <section className="mx-auto grid gap-8 md:gap-16">
         <ProcessPanel
-          title={presentationContent.processPanel.title}
-          steps={presentationContent.processPanel.steps.map((step) => ({
+          title={vouchPresentationContent.processPanel.title}
+          steps={vouchPresentationContent.processPanel.steps.map((step) => ({
             ...step,
             icon: processIcons[step.icon] ?? FileText,
           }))}
-          footer={presentationContent.processPanel.footer}
+          footer={vouchPresentationContent.processPanel.footer}
         />
 
         <ProcessPanelList
