@@ -125,6 +125,12 @@ pnpm validate:release
 
 Database mutation commands remain explicit: `pnpm db:migrate` creates development migrations, `pnpm db:deploy` applies committed migrations, and `pnpm db:seed` runs the configured seed. Never run them against production without an approved deployment gate.
 
+## Pull-request CI
+
+Pull requests run the same credential-free `pnpm validate:ci` contract after a frozen install. Repository secret scanning remains a separate read-only workflow so failures stay attributable.
+
+Coverage thresholds, visual suites, full Playwright matrices, real-database attack tests, deployment, and migrations are intentionally not pull-request gates yet. They remain explicit later release work under `pnpm validate:release`, provider-specific verification, or an owner-authorized deployment plan.
+
 ## Mock Pages
 
 `mock-pages/` remains a teaching area copied from the source workbench. These examples are not active App Router routes and should not be treated as production surfaces.
