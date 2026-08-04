@@ -46,6 +46,17 @@ import {
   TimelineTime,
   TimelineTitle,
 } from "@/components/ui/timeline"
+import type {
+  VouchCreationActionResult,
+  VouchCreationDraft,
+  VouchCreationPreviewData,
+} from "@/types/presentationPreviewTypes"
+
+export type {
+  VouchCreationActionResult,
+  VouchCreationDraft,
+  VouchCreationPreviewData,
+} from "@/types/presentationPreviewTypes"
 
 export type VouchStatusTone = "active" | "pending" | "complete" | "failed" | "expired" | "offline"
 
@@ -339,34 +350,6 @@ function StatusRow({ label, value }: { label: string; value: string }) {
       <span className="font-mono font-black text-white">{value}</span>
     </div>
   )
-}
-
-export type VouchCreationDraft = {
-  amountDollars: string
-  appointmentStartsAt: string
-  confirmationOpensAt: string
-  confirmationExpiresAt: string
-  disclaimerAccepted: boolean
-}
-
-export type VouchCreationActionResult =
-  | {
-      ok: true
-      data?: VouchCreationPreviewData
-    }
-  | {
-      ok: false
-      formError?: string
-      fieldErrors?: Record<string, string[]>
-    }
-
-export type VouchCreationPreviewData = {
-  amountCents?: number
-  customerTotalCents?: number
-  vouchServiceFeeCents?: number
-  processingFeeOffsetCents?: number
-  detailPath?: string
-  checkoutUrl?: string
 }
 
 export interface VouchCreationWizardProps {

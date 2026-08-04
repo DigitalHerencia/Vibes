@@ -1,25 +1,24 @@
+"use client"
+
+import {
+  createStatusPreviewVouch,
+  saveStatusPreviewAmount,
+  saveStatusPreviewWindow,
+} from "@/components/(presentation)/presentationOperations"
 import { VouchCreationWizard } from "@/components/blocks/status"
-import type { VouchCreationActionResult, VouchCreationDraft } from "@/components/blocks/status"
+import type { VouchCreationDraft } from "@/types/presentationPreviewTypes"
 
 export interface StatusFeatureClientProps {
   initialDraft?: Partial<VouchCreationDraft>
-  onSaveAmount: (draft: VouchCreationDraft) => Promise<VouchCreationActionResult>
-  onSaveWindow: (draft: VouchCreationDraft) => Promise<VouchCreationActionResult>
-  onCreateVouch: (draft: VouchCreationDraft) => Promise<VouchCreationActionResult>
 }
 
-export function StatusFeatureClient({
-  initialDraft,
-  onSaveAmount,
-  onSaveWindow,
-  onCreateVouch,
-}: StatusFeatureClientProps) {
+export function StatusFeatureClient({ initialDraft }: StatusFeatureClientProps) {
   return (
     <VouchCreationWizard
       initialDraft={initialDraft}
-      onSaveAmount={onSaveAmount}
-      onSaveWindow={onSaveWindow}
-      onCreateVouch={onCreateVouch}
+      onSaveAmount={saveStatusPreviewAmount}
+      onSaveWindow={saveStatusPreviewWindow}
+      onCreateVouch={createStatusPreviewVouch}
     />
   )
 }

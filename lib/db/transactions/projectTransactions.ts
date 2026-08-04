@@ -1,3 +1,5 @@
+import "server-only"
+
 import type { Prisma } from "@/prisma/generated/prisma/client"
 
 import { recordAuditEventTx } from "@/lib/db/transactions/auditTransactions"

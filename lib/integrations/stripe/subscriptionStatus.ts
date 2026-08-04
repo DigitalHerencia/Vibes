@@ -1,3 +1,5 @@
+import "server-only"
+
 import type { BillingSubscriptionStatus } from "@/types/billingTypes"
 
 export function mapStripeSubscriptionStatus(value: string): BillingSubscriptionStatus {
@@ -14,8 +16,4 @@ export function mapStripeSubscriptionStatus(value: string): BillingSubscriptionS
     default:
       throw new Error("Unsupported Stripe subscription status.")
   }
-}
-
-export function statusGrantsCoreEntitlement(status: BillingSubscriptionStatus): boolean {
-  return status === "active" || status === "trialing"
 }

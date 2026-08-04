@@ -1,8 +1,5 @@
-import type {
-  VouchCreationDraft,
-  VouchStatusDocumentData,
-  VouchStatusTimelineItem,
-} from "@/components/blocks/status"
+import type { VouchStatusDocumentData, VouchStatusTimelineItem } from "@/components/blocks/status"
+import type { VouchCreationDraft } from "@/types/presentationPreviewTypes"
 
 export const presentationPreviewTimeline: VouchStatusTimelineItem[] = [
   {

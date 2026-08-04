@@ -1,5 +1,6 @@
 import "server-only"
 
+import { connectAccountStatus } from "@/lib/connect/status"
 import { getPrisma } from "@/lib/db/prisma"
 import {
   applyConnectAccountSnapshotTx,
@@ -55,6 +56,7 @@ export async function reconcileConnectWebhook(
           await applyConnectAccountSnapshotTx(tx, {
             organizationId,
             snapshot,
+            status: connectAccountStatus(snapshot),
             operation: "readiness",
             now,
           })

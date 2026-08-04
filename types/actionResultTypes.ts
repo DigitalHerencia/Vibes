@@ -7,7 +7,7 @@ export type ActionResult<TData = void> =
     }
   | {
       ok: false
-      code?: string
+      code: string
       formError?: string
       fieldErrors?: FieldErrors
     }

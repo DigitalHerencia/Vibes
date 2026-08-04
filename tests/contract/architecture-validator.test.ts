@@ -16,6 +16,12 @@ function createFixture(): string {
   return fixture
 }
 
+function writeFixtureFile(fixture: string, path: string, body: string) {
+  const target = join(fixture, path)
+  mkdirSync(join(target, ".."), { recursive: true })
+  writeFileSync(target, body)
+}
+
 afterEach(() => {
   for (const fixture of fixtures.splice(0)) {
     rmSync(fixture, { recursive: true, force: true })
@@ -42,5 +48,54 @@ describe("architecture validator", () => {
     rmSync(offender)
 
     expect(() => execFileSync(process.execPath, [validator, "--root", fixture])).not.toThrow()
+  })
+
+  it.each([
+    [
+      "app/page.tsx",
+      'import { getPrisma } from "@/lib/db/prisma"\nexport default function Page() { return null }\n',
+      "routes adapt requests and cannot access persistence",
+    ],
+    [
+      "components/server-card.tsx",
+      '"use server"\nexport async function ServerCard() {}\n',
+      "cannot declare Server Actions",
+    ],
+    [
+      "types/leaked.ts",
+      'import type { Prisma } from "@/prisma/generated/prisma/client"\nexport type Leaked = Prisma.ProjectGetPayload<{}>\n',
+      "public schemas and contracts",
+    ],
+    [
+      "lib/fetchers/writing.ts",
+      'import "server-only"\nexport async function write(tx) { return tx.project.create({ data: {} }) }\n',
+      "cannot write",
+    ],
+    [
+      "lib/auth/synchronizing.ts",
+      'import "server-only"\nexport async function sync(prisma) { return prisma.user.upsert({ where: {} }) }\n',
+      "session adapters cannot write",
+    ],
+    [
+      "lib/actions/direct-db.ts",
+      '"use server"\nimport { getPrisma } from "@/lib/db/prisma"\nexport async function action() { return getPrisma() }\n',
+      "Server Actions validate and delegate",
+    ],
+    [
+      "lib/fetchers/unguarded.ts",
+      "export async function read() { return [] }\n",
+      "server-only guard",
+    ],
+  ])("rejects %s", (path, body, evidence) => {
+    const fixture = createFixture()
+    writeFixtureFile(fixture, path, body)
+
+    const rejected = spawnSync(process.execPath, [validator, "--root", fixture], {
+      encoding: "utf8",
+    })
+
+    expect(rejected.status).toBe(1)
+    expect(rejected.stderr).toContain(path)
+    expect(rejected.stderr).toContain(evidence)
   })
 })

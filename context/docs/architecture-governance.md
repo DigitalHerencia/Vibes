@@ -136,6 +136,7 @@ An existing event row is not proof of completed processing. Store bounded saniti
 - Keep credentials and provider SDK semantics in server-owned integration boundaries.
 - Preserve atomic invariants with transactions and repeated-provider safety with idempotency.
 - Organization tenancy, capability RBAC, PostgreSQL RLS, shared webhook claims, Stripe subscription billing, and the optional Stripe Connect code reference are implemented with executable local proof; treat live-environment role provisioning, live Clerk/Stripe configuration and authenticated journeys, Connect liability/provider configuration, and catalog isolation as incomplete until their owning gates provide fresh evidence.
+- Server-operation ownership is mechanically enforced by `scripts/validate-architecture.mjs` and `.agents/contracts/server-operations.yaml`: routes and components cannot reach persistence/provider infrastructure, fetchers cannot mutate, Server Actions live in `lib/actions`, transactions cannot own UI/provider behavior, and public types cannot import Prisma.
 
 ## Presentation contract
 

@@ -8,6 +8,7 @@ import {
 } from "@/lib/projects/workflows/projectWorkflows"
 import { createProjectSchema, updateProjectSchema } from "@/schemas/projectSchemas"
 import { actionFailure, actionSuccess, type ActionResult } from "@/types/actionResultTypes"
+import type { ProjectActionState } from "@/types/projectTypes"
 
 function formString(formData: FormData, key: string): string {
   const value = formData.get(key)
@@ -15,6 +16,7 @@ function formString(formData: FormData, key: string): string {
 }
 
 export async function createProjectAction(
+  _previousState: ProjectActionState,
   formData: FormData
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createProjectSchema.safeParse({
@@ -36,6 +38,7 @@ export async function createProjectAction(
 
 export async function updateProjectAction(
   projectId: string,
+  _previousState: ProjectActionState,
   formData: FormData
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = updateProjectSchema.safeParse({

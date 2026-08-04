@@ -1,6 +1,7 @@
+import "server-only"
+
 import type { Prisma } from "@/prisma/generated/prisma/client"
 
-import { connectAccountStatus } from "@/lib/connect/status"
 import type { WebhookClaim } from "@/lib/db/transactions/webhookTransactions"
 import type {
   ConnectAccountSnapshot,
@@ -22,6 +23,7 @@ export async function applyConnectAccountSnapshotTx(
   input: {
     organizationId: string
     snapshot: ConnectAccountSnapshot
+    status: "pending" | "restricted" | "ready"
     operation: RecoveryOperation
     now: Date
   }
@@ -40,7 +42,7 @@ export async function applyConnectAccountSnapshotTx(
       organizationId: input.organizationId,
       stripeAccountId: input.snapshot.accountId,
       country: input.snapshot.country,
-      status: connectAccountStatus(input.snapshot),
+      status: input.status,
       detailsSubmitted: input.snapshot.detailsSubmitted,
       chargesEnabled: input.snapshot.chargesEnabled,
       payoutsEnabled: input.snapshot.payoutsEnabled,
@@ -50,7 +52,7 @@ export async function applyConnectAccountSnapshotTx(
     },
     update: {
       country: input.snapshot.country,
-      status: connectAccountStatus(input.snapshot),
+      status: input.status,
       detailsSubmitted: input.snapshot.detailsSubmitted,
       chargesEnabled: input.snapshot.chargesEnabled,
       payoutsEnabled: input.snapshot.payoutsEnabled,

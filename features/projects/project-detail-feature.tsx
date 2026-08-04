@@ -11,12 +11,7 @@ type ProjectDetailFeatureProps = {
 
 export async function ProjectDetailFeature({ projectId }: ProjectDetailFeatureProps) {
   const project = await getProjectDetailState(projectId)
-
-  async function updateAction(formData: FormData) {
-    "use server"
-
-    await updateProjectAction(project.id, formData)
-  }
+  const updateAction = updateProjectAction.bind(null, project.id)
 
   return (
     <div className="grid gap-8">
