@@ -1,0 +1,24 @@
+{
+  "archive_notice": "Legacy record with a 2026-05-16 source date, last archived on 2026-08-03; not current repository evidence.",
+  "source_date": "2026-05-16",
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Use shared components by default",
+      "status": "accepted",
+      "rationale": "Specialized Vouch components are reserved for protocol state, Vouch object summaries, and Vouch detail operations."
+    },
+    {
+      "id": "DEC-002",
+      "title": "Keep Stripe-hosted provider surfaces",
+      "status": "accepted",
+      "rationale": "Payment, payment method, identity, payout onboarding, and authorization collection remain hosted by Stripe."
+    },
+    {
+      "id": "DEC-003",
+      "title": "Use the plural Clerk webhook route",
+      "status": "accepted",
+      "rationale": "The owner authorized /api/clerk/webhooks as the canonical route for Issue #3."
+    }
+  ]
+}

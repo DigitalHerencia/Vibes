@@ -73,7 +73,9 @@ describe("architecture surface", () => {
   })
 
   it("parses agent contracts as YAML", () => {
-    const contractFiles = files("rg --files .agents/contracts")
+    const contractFiles = files("rg --files .agents/contracts").filter((file) =>
+      /\.ya?ml$/i.test(file)
+    )
     for (const file of contractFiles) {
       const parsed = YAML.parse(readFileSync(join(root, file), "utf8"))
       expect(parsed).toBeTruthy()

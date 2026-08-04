@@ -1,26 +1,18 @@
-id: vouch.integrations
-source_date: "2026-05-16"
-authority: source-of-truth
+id: vibes.integrations
+version: 1
+authority: current-source-contract
 providers:
-  stripe:
-    owns:
-      - payment_method_collection
-      - payment_authorization
-      - hosted_checkout
-      - identity_collection
-      - connect_onboarding
-      - payout_account_management
-      - payment_truth
-    vouch_stores_only:
-      - safe_provider_references
-      - statuses
-      - timestamps
-      - readiness_flags
-      - audit_safe_metadata
   clerk:
-    owns:
-      - authentication_truth
+    status: code-present
+    owns: [identity, session, account_ui]
+    webhook_route: /api/clerk/webhooks
+  neon:
+    status: code-present
+    owns: [postgresql_service]
+  stripe:
+    status: not-implemented
 rules:
-  browser_return_is_not_payment_truth: true
-  no_raw_card_bank_identity_storage: true
+  provider_secrets_server_only: true
+  browser_redirect_is_not_provider_truth: true
   webhook_reconciliation_required: true
+  live_configuration_requires_separate_verification: true

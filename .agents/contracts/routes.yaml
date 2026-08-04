@@ -1,26 +1,11 @@
-id: vouch.routes
-source_date: "2026-05-16"
-authority: source-of-truth
-public:
-  - /
-  - /pricing
-  - /faq
-  - /legal/terms
-  - /legal/privacy
-  - /checkout/success
-auth:
-  - /sign-in
-  - /sign-up
-tenant:
-  - /dashboard
-  - /vouches/new
-  - /vouches/new/confirm
-  - /vouches/[vouchId]
-api:
-  - /api/clerk/webhooks
-  - /api/stripe/webhooks
-external_provider_surfaces:
-  - stripe_connect
-  - stripe_checkout
-  - stripe_payment_method_management
-  - clerk_account
+id: vibes.routes
+version: 1
+authority: current-source-contract
+public: ["/", "/pricing", "/faq"]
+auth: ["/sign-in", "/sign-up"]
+protected: ["/dashboard", "/projects", "/projects/new", "/projects/[projectId]", "/settings"]
+api: ["/api/clerk/webhooks"]
+reference_catalog:
+  status: currently-exposed
+  route_group: app/(presentation)
+  known_gap: reference catalog is not yet isolated from default production routes

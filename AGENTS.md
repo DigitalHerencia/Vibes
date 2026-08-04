@@ -1,28 +1,34 @@
-# Next Stack Template Agent Instructions
+# Vibes Agent Instructions
 
-Before editing this template, read:
+This repository is an opinionated, reusable B2B SaaS application system. Apply governance in this order:
 
-- `.agents/instructions/agent-architecture-rules.md`
-- `.agents/contracts/architecture-boundaries.yml`
-- `.agents/docs/architecture-governance.md`
+1. The approved specification and linked GitHub Issue define delivery scope and acceptance.
+2. [Accepted ADRs](docs/adr/README.md) govern durable architectural decisions.
+3. [Architecture governance](context/docs/architecture-governance.md) defines layer ownership and dependency direction.
+4. [Machine-readable contracts](.agents/contracts/README.md) encode current repository boundaries and known gaps.
+5. [Agent architecture rules](context/instructions/agent-architecture-rules.md) guide implementation and reporting.
+6. [Reference implementations](reference-implementations/README.md) are examples only and never override reusable governance.
 
-Core rule:
+When sources conflict, stop before implementation and report the exact conflict. Do not treat plans, archived execution JSON, reference implementations, or old evidence snapshots as current completion evidence.
+
+## Core rule
 
 ```txt
-Pages select.
-Layouts and shells frame.
+Routes adapt.
 Features orchestrate.
-Blocks assemble.
 Components render.
-Primitives control low-level UI behavior.
 Fetchers read.
 Actions write.
-Auth identifies.
-Authz authorizes.
 Schemas validate.
-DTOs transport safe data.
-Transactions persist atomically.
-Webhooks reconcile provider events.
+Authorization decides.
+Transactions preserve invariants.
+Webhooks reconcile external truth.
 ```
 
-Clerk organizations are intentionally not used. Authorization is enforced through local Prisma-backed row ownership and membership checks.
+## Delivery rule
+
+- Inspect the relevant Issue, ADRs, contracts, source, tests, branch, and worktree before editing.
+- Preserve unrelated work and make the smallest complete change that satisfies approved scope.
+- Distinguish intended architecture, current implementation, known gaps, and executed evidence.
+- Never claim an unrun check passed or infer provider/deployment state from source files.
+- Stop at production, destructive-data, secret-rotation, external-publication, or policy gates that require owner action.

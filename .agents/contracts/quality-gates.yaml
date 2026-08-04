@@ -1,23 +1,15 @@
-id: vouch.quality-gates
-source_date: "2026-05-16"
-authority: source-of-truth
-checks:
-  contract_validation: pnpm validate:contracts
-  typecheck: pnpm typecheck
-  unit_tests: pnpm test
-  full_validation: pnpm validate
-visual_review:
-  server_required: approval_required
-  screenshot_catalog:
-    - landing
-    - pricing
-    - faq
-    - terms
-    - privacy
-    - sign-in
-    - sign-up
-    - dashboard
-    - create-vouch
-    - confirm-create
-    - vouch-detail
-    - checkout-success
+id: vibes.quality-gates
+version: 1
+authority: executable-command-contract
+credential_free:
+  fast: pnpm validate:fast
+  complete: pnpm validate
+  ci: pnpm validate:ci
+focused:
+  governance: pnpm governance:validate
+  architecture: pnpm architecture:validate
+credentialed:
+  release: pnpm validate:release
+rules:
+  unrun_is_not_passed: true
+  production_actions_require_owner_gate: true
