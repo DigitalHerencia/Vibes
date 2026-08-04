@@ -1,6 +1,6 @@
 import "server-only"
 
-import { auth, currentUser } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server"
 
 import { getPrisma } from "@/lib/db/prisma"
 import { withTenantContext } from "@/lib/db/withTenantContext"
@@ -40,45 +40,9 @@ export async function getCurrentUserContext(): Promise<AuthenticatedUserContext 
     },
   })
 
-  if (existingUser) {
-    if (existingUser.status !== "active") {
-      return null
-    }
+  if (!existingUser || existingUser.status !== "active") return null
 
-    return { userId, localUser: mapLocalUser(existingUser) }
-  }
-
-  const clerkUser = await currentUser()
-  const primaryEmail =
-    clerkUser?.emailAddresses.find((email) => email.id === clerkUser.primaryEmailAddressId)
-      ?.emailAddress ?? clerkUser?.emailAddresses[0]?.emailAddress
-
-  const localUser = await prisma.user.upsert({
-    where: { clerkUserId: userId },
-    create: {
-      clerkUserId: userId,
-      email: primaryEmail ?? null,
-      displayName: clerkUser?.fullName ?? clerkUser?.username ?? null,
-      status: "active",
-    },
-    update: {
-      email: primaryEmail ?? null,
-      displayName: clerkUser?.fullName ?? clerkUser?.username ?? null,
-      status: "active",
-    },
-    select: {
-      id: true,
-      clerkUserId: true,
-      email: true,
-      displayName: true,
-      status: true,
-    },
-  })
-
-  return {
-    userId,
-    localUser: mapLocalUser(localUser),
-  }
+  return { userId, localUser: mapLocalUser(existingUser) }
 }
 
 export async function requireCurrentUserContext(): Promise<AuthenticatedUserContext> {

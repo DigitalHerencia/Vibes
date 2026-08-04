@@ -71,7 +71,7 @@ Presentation performs no protected reads, writes, authorization, Prisma/SQL acce
 - `lib/db/prisma.ts` owns lazy server-only Prisma initialization.
 - `lib/cache/` owns cache tags and invalidation helpers.
 
-`lib/integrations/`, `lib/webhooks/`, and domain workflow directories are reserved ownership patterns from accepted ADRs. Their absence is not implementation evidence; provider/domain issues create them only when approved.
+`lib/integrations/` maps verified provider values into bounded domain-safe inputs. `lib/webhooks/` coordinates provider-independent claim/retry semantics with provider-specific reconciliation. Domain workflow directories orchestrate approved application use cases.
 
 ### Trust boundaries
 
@@ -135,7 +135,7 @@ An existing event row is not proof of completed processing. Store bounded saniti
 - Use minimal selects and DTOs to constrain exposure.
 - Keep credentials and provider SDK semantics in server-owned integration boundaries.
 - Preserve atomic invariants with transactions and repeated-provider safety with idempotency.
-- Organization tenancy, capability RBAC, and PostgreSQL RLS are implemented with executable local attack proof; treat live-environment role provisioning, the shared webhook claim model, Stripe modules, and catalog isolation as incomplete until their owning gates provide fresh evidence.
+- Organization tenancy, capability RBAC, PostgreSQL RLS, and the shared webhook claim model are implemented with executable local attack proof; treat live-environment role provisioning, live Clerk configuration/authenticated journeys, Stripe modules, and catalog isolation as incomplete until their owning gates provide fresh evidence.
 
 ## Presentation contract
 

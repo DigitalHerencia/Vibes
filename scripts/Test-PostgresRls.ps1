@@ -46,8 +46,8 @@ try {
 
   $env:TEST_DATABASE_ADMIN_URL = $adminUrl
   $env:TEST_DATABASE_RUNTIME_PASSWORD = $runtimePassword
-  corepack pnpm exec vitest run --config vitest.integration.config.ts tests/integration/postgres-rls.test.ts
-  if ($LASTEXITCODE -ne 0) { throw "PostgreSQL RLS attack tests failed." }
+  corepack pnpm exec vitest run --config vitest.integration.config.ts tests/integration/postgres-rls.test.ts tests/integration/webhook-processing.test.ts
+  if ($LASTEXITCODE -ne 0) { throw "PostgreSQL security integration tests failed." }
 }
 finally {
   Remove-Item Env:DIRECT_DATABASE_URL -ErrorAction SilentlyContinue

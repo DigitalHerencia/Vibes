@@ -1,49 +1,46 @@
-import { headers } from "next/headers"
-import { NextResponse } from "next/server"
-import { Webhook } from "svix"
+import { verifyWebhook } from "@clerk/nextjs/webhooks"
+import { NextRequest, NextResponse } from "next/server"
 
 import { getOptionalEnv } from "@/lib/env"
+import { mapVerifiedClerkWebhook } from "@/lib/integrations/clerk/webhooks"
+import { reconcileClerkWebhook } from "@/lib/webhooks/clerkWebhookWorkflow"
 
-export async function POST(request: Request) {
-  const secret = getOptionalEnv("CLERK_WEBHOOK_SECRET")
-
-  if (!secret) {
-    return NextResponse.json({ error: "Missing Clerk webhook secret." }, { status: 500 })
-  }
-
-  const headerStore = await headers()
-  const svixId = headerStore.get("svix-id")
-  const svixTimestamp = headerStore.get("svix-timestamp")
-  const svixSignature = headerStore.get("svix-signature")
-
-  if (!svixId || !svixTimestamp || !svixSignature) {
-    return NextResponse.json({ error: "Missing Svix headers." }, { status: 400 })
-  }
-
-  const payload = await request.text()
-  const webhook = new Webhook(secret)
-
-  let event: unknown
-
-  try {
-    event = webhook.verify(payload, {
-      "svix-id": svixId,
-      "svix-timestamp": svixTimestamp,
-      "svix-signature": svixSignature,
-    })
-  } catch {
-    return NextResponse.json({ error: "Invalid webhook signature." }, { status: 400 })
-  }
-
-  const { processClerkWebhookEvent } = await import("@/lib/actions/authActions")
-  const result = await processClerkWebhookEvent(
-    event as { type: string; data: { id: string } },
-    svixId
-  )
-
-  if (!result.ok) {
-    return NextResponse.json(result, { status: 500 })
-  }
-
-  return NextResponse.json(result)
+type HandlerDependencies = {
+  verify: (request: NextRequest, options: { signingSecret: string }) => Promise<unknown>
+  reconcile: typeof reconcileClerkWebhook
 }
+
+export function createClerkWebhookPostHandler(dependencies: HandlerDependencies) {
+  return async function clerkWebhookPost(request: NextRequest) {
+    const secret = getOptionalEnv("CLERK_WEBHOOK_SIGNING_SECRET")
+
+    if (!secret) {
+      return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 })
+    }
+
+    const providerEventId = request.headers.get("svix-id")
+    if (!providerEventId || providerEventId.length > 255) {
+      return NextResponse.json({ error: "Invalid webhook request." }, { status: 400 })
+    }
+
+    let verifiedEvent: unknown
+    try {
+      verifiedEvent = await dependencies.verify(request, { signingSecret: secret })
+    } catch {
+      return NextResponse.json({ error: "Invalid webhook request." }, { status: 400 })
+    }
+
+    const mapped = mapVerifiedClerkWebhook(verifiedEvent, providerEventId)
+    if (!mapped.ok) {
+      return NextResponse.json({ error: "Malformed webhook payload." }, { status: 400 })
+    }
+
+    const result = await dependencies.reconcile(mapped.event)
+    return NextResponse.json(result, { status: result.ok ? 200 : 500 })
+  }
+}
+
+export const POST = createClerkWebhookPostHandler({
+  verify: verifyWebhook,
+  reconcile: reconcileClerkWebhook,
+})

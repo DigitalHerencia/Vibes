@@ -32,7 +32,7 @@ All provider webhooks use a shared durable ledger with received, processing, pro
 ### Negative
 
 - **NEG-001**: Claiming, retries, and bounded error metadata add persistence complexity.
-- **NEG-002**: The current ledger lacks the complete processing/claim semantics.
+- **NEG-002**: Operators must monitor failed and stale processing claims instead of treating receipt as completion.
 
 ## Alternatives Considered
 
@@ -45,6 +45,8 @@ All provider webhooks use a shared durable ledger with received, processing, pro
 
 - **IMP-001**: Store sanitized bounded metadata, never unrestricted payloads or secrets.
 - **IMP-002**: Provider-specific workflows consume normalized validated events.
+- **IMP-003**: `attemptCount` is the fencing token; a superseded worker must roll back its side effects.
+- **IMP-004**: Processing claims become stale after five minutes and may then be reclaimed.
 
 ## References
 

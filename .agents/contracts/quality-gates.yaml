@@ -8,7 +8,7 @@ credential_free:
 focused:
   governance: pnpm governance:validate
   architecture: pnpm architecture:validate
-  database_security: pnpm test:database-security
+  database_and_webhook_security: pnpm test:database-security
 credentialed:
   release: pnpm validate:release
 rules:
