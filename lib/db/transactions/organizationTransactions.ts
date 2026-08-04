@@ -19,10 +19,11 @@ function slugify(value: string): string {
 
 export async function createOrganizationTx(
   tx: Prisma.TransactionClient,
-  input: CreateOrganizationInput & { actorUserId: string }
+  input: CreateOrganizationInput & { organizationId: string; actorUserId: string }
 ) {
   const organization = await tx.organization.create({
     data: {
+      id: input.organizationId,
       name: input.name,
       slug: `${slugify(input.name)}-${crypto.randomUUID().slice(0, 8)}`,
       memberships: {

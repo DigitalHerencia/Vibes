@@ -7,6 +7,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)))
 
 const contractFiles = [
   ".agents/contracts/architecture-boundaries.yml",
+  ".agents/contracts/database-security.yaml",
   ".agents/contracts/domain-model.yaml",
   ".agents/contracts/integrations.yaml",
   ".agents/contracts/product.yaml",

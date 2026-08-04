@@ -1,0 +1,50 @@
+id: vibes.database-security
+version: 1
+authority: migration-and-executable-test-contract
+connections:
+  migration: direct owner connection
+  runtime: pooled restricted login inheriting vibes_runtime
+roles:
+  migration_owner:
+    owns_schema: true
+    runtime_use: forbidden
+  vibes_runtime:
+    login: false
+    owns_protected_tables: false
+    superuser: false
+    bypass_rls: false
+    create_database: false
+    create_role: false
+tenant_context:
+  setting: app.current_organization_id
+  setter: lib/db/withTenantContext.ts
+  transaction_local: true
+protected_tables:
+  organizations: id
+  memberships: organizationId
+  organization_invitations: organizationId
+  projects: organizationId
+  audit_events: organizationId
+global_tables:
+  users: local identity
+  provider_webhook_events: provider event ledger
+policy_commands: [SELECT, INSERT, UPDATE, DELETE]
+rls:
+  enabled: true
+  forced: true
+  missing_context: default deny
+verification:
+  command: pnpm test:database-security
+  database: ephemeral PostgreSQL container
+  attacks:
+    [
+      missing-context,
+      cross-tenant-select,
+      cross-tenant-insert,
+      cross-tenant-update,
+      cross-tenant-delete,
+      broad-prisma-query,
+    ]
+live_neon:
+  verified: false
+  reason: provider CLI did not return in the current shell; no provider mutation was authorized

@@ -1,8 +1,10 @@
 import { config } from "dotenv"
 import { defineConfig } from "prisma/config"
 
-config({ path: ".env" })
-config({ path: ".env.local", override: true })
+if (process.env.VIBES_SKIP_DOTENV !== "1") {
+  config({ path: ".env" })
+  config({ path: ".env.local", override: true })
+}
 
 const migrationDatabaseUrl =
   process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL

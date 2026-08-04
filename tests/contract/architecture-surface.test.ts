@@ -88,4 +88,17 @@ describe("architecture surface", () => {
       expect(parsed).toBeTruthy()
     }
   })
+
+  it("keeps raw database execution inside the canonical tenant helper", () => {
+    const sourceFiles = files("lib").filter((file) =>
+      sourceExtensions.some((extension) => file.endsWith(extension))
+    )
+    const offenders = sourceFiles.filter((file) => {
+      if (file === "lib/db/withTenantContext.ts") return false
+      const body = readFileSync(join(root, file), "utf8")
+      return body.includes("$executeRaw") || body.includes("$queryRaw")
+    })
+
+    expect(offenders).toEqual([])
+  })
 })
