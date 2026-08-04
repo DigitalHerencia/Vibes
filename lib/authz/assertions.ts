@@ -1,28 +1,41 @@
-import type { AuthenticatedUserContext } from "@/types/authTypes"
-import { canReadProject, canUpdateProject } from "@/lib/authz/policies"
+import {
+  canManageMembership,
+  canReadProject,
+  canTransitionProjectStatus,
+  canUpdateProject,
+} from "@/lib/authz/policies"
+import type { OrganizationRole, TenantContext } from "@/types/authzTypes"
 
 type ProjectAccessRecord = {
-  ownerId: string
-  memberships: Array<{
-    userId: string
-    role: "owner" | "member" | "viewer"
-  }>
+  organizationId: string
+  status: "active" | "archived"
 }
 
-export function assertCanReadProject(
-  context: AuthenticatedUserContext,
-  project: ProjectAccessRecord
+export function assertCanReadProject(context: TenantContext, project: ProjectAccessRecord): void {
+  if (!canReadProject(context, project)) throw new Error("Project access denied.")
+}
+
+export function assertCanUpdateProject(context: TenantContext, project: ProjectAccessRecord): void {
+  if (!canUpdateProject(context, project)) throw new Error("Project update denied.")
+}
+
+export function assertCanTransitionProjectStatus(
+  context: TenantContext,
+  project: ProjectAccessRecord,
+  nextStatus: ProjectAccessRecord["status"]
 ): void {
-  if (!canReadProject(context, project)) {
-    throw new Error("Project access denied.")
+  if (!canTransitionProjectStatus(context, project, nextStatus)) {
+    throw new Error("Project status transition denied.")
   }
 }
 
-export function assertCanUpdateProject(
-  context: AuthenticatedUserContext,
-  project: ProjectAccessRecord
+export function assertCanManageMembership(
+  context: TenantContext,
+  target: { organizationId: string; role: OrganizationRole },
+  ownerCount: number,
+  nextRole: OrganizationRole | null
 ): void {
-  if (!canUpdateProject(context, project)) {
-    throw new Error("Project update denied.")
+  if (!canManageMembership(context, target, ownerCount, nextRole)) {
+    throw new Error("Membership change denied.")
   }
 }

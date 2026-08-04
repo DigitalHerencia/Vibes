@@ -3,7 +3,9 @@ import "server-only"
 import { auth, currentUser } from "@clerk/nextjs/server"
 
 import { getPrisma } from "@/lib/db/prisma"
+import { deriveTenantContext } from "@/lib/authz/tenant"
 import type { AuthenticatedUserContext, LocalUserContext } from "@/types/authTypes"
+import type { TenantContext } from "@/types/authzTypes"
 
 function mapLocalUser(user: {
   id: string
@@ -86,4 +88,36 @@ export async function requireCurrentUserContext(): Promise<AuthenticatedUserCont
   }
 
   return context
+}
+
+export async function requireTenantContext(): Promise<TenantContext> {
+  const context = await requireCurrentUserContext()
+  const prisma = getPrisma()
+  const user = await prisma.user.findUnique({
+    where: { id: context.localUser.id },
+    select: {
+      selectedOrganizationId: true,
+      memberships: {
+        select: {
+          id: true,
+          userId: true,
+          role: true,
+          createdAt: true,
+          organization: {
+            select: {
+              id: true,
+              status: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  const tenant = user
+    ? deriveTenantContext(context, user.memberships, user.selectedOrganizationId)
+    : null
+
+  if (!tenant) throw new Error("Active organization membership required.")
+  return tenant
 }

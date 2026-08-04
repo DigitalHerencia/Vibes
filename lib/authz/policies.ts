@@ -1,43 +1,73 @@
-import type { AuthenticatedUserContext } from "@/types/authTypes"
-import type { ProjectRole } from "@/types/projectTypes"
+import type { Capability, OrganizationRole, TenantContext } from "@/types/authzTypes"
 
 type ProjectAccessRecord = {
-  ownerId: string
-  memberships: Array<{
-    userId: string
-    role: ProjectRole
-  }>
+  organizationId: string
+  status: "active" | "archived"
 }
 
-function roleForProject(
-  context: AuthenticatedUserContext,
-  project: ProjectAccessRecord
-): ProjectRole | null {
-  if (project.ownerId === context.localUser.id) return "owner"
+type MembershipAccessRecord = {
+  organizationId: string
+  role: OrganizationRole
+}
 
+function hasTenantCapability(context: TenantContext, capability: Capability): boolean {
   return (
-    project.memberships.find((membership) => membership.userId === context.localUser.id)?.role ??
-    null
+    context.organization.status === "active" &&
+    context.capabilities.some((candidate) => candidate === capability)
   )
 }
 
-export function canReadProject(
-  context: AuthenticatedUserContext,
-  project: ProjectAccessRecord
-): boolean {
-  return roleForProject(context, project) !== null
+function isCurrentTenant(context: TenantContext, organizationId: string): boolean {
+  return context.organization.id === organizationId
 }
 
-export function canUpdateProject(
-  context: AuthenticatedUserContext,
-  project: ProjectAccessRecord
-): boolean {
-  return roleForProject(context, project) === "owner"
+export function canReadProject(context: TenantContext, project: ProjectAccessRecord): boolean {
+  return (
+    isCurrentTenant(context, project.organizationId) && hasTenantCapability(context, "project.read")
+  )
 }
 
-export function canManageProjectMembers(
-  context: AuthenticatedUserContext,
-  project: ProjectAccessRecord
+export function canCreateProject(context: TenantContext): boolean {
+  return hasTenantCapability(context, "project.create")
+}
+
+export function canUpdateProject(context: TenantContext, project: ProjectAccessRecord): boolean {
+  return (
+    project.status === "active" &&
+    isCurrentTenant(context, project.organizationId) &&
+    hasTenantCapability(context, "project.update")
+  )
+}
+
+export function canTransitionProjectStatus(
+  context: TenantContext,
+  project: ProjectAccessRecord,
+  nextStatus: ProjectAccessRecord["status"]
 ): boolean {
-  return roleForProject(context, project) === "owner"
+  if (!isCurrentTenant(context, project.organizationId)) return false
+  if (!hasTenantCapability(context, "project.archive")) return false
+
+  return (
+    (project.status === "active" && nextStatus === "archived") ||
+    (project.status === "archived" && nextStatus === "active")
+  )
+}
+
+export function canManageMembership(
+  context: TenantContext,
+  target: MembershipAccessRecord,
+  ownerCount: number,
+  nextRole: OrganizationRole | null
+): boolean {
+  if (!isCurrentTenant(context, target.organizationId)) return false
+  if (!hasTenantCapability(context, "membership.manage")) return false
+  if (target.role === "owner" && context.membership.role !== "owner") return false
+  if (nextRole === "owner" && context.membership.role !== "owner") return false
+
+  const removesOwner = target.role === "owner" && nextRole !== "owner"
+  return !removesOwner || ownerCount > 1
+}
+
+export function canCreateInvitation(context: TenantContext, role: OrganizationRole): boolean {
+  return role !== "owner" && hasTenantCapability(context, "invitation.manage")
 }

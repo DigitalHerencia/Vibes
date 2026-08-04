@@ -135,7 +135,7 @@ An existing event row is not proof of completed processing. Store bounded saniti
 - Use minimal selects and DTOs to constrain exposure.
 - Keep credentials and provider SDK semantics in server-owned integration boundaries.
 - Preserve atomic invariants with transactions and repeated-provider safety with idempotency.
-- Treat the tenant/RLS, capability RBAC, shared webhook claim model, Stripe modules, and catalog isolation as known incomplete implementation until their queued issues provide fresh evidence.
+- Organization tenancy and capability RBAC are implemented in application code; treat PostgreSQL RLS, the shared webhook claim model, Stripe modules, and catalog isolation as known incomplete until their queued issues provide fresh evidence.
 
 ## Presentation contract
 

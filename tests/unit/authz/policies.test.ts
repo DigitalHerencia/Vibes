@@ -1,48 +1,71 @@
 import { describe, expect, it } from "vitest"
 
-import { canManageProjectMembers, canReadProject, canUpdateProject } from "@/lib/authz/policies"
-import type { AuthenticatedUserContext } from "@/types/authTypes"
+import {
+  canCreateInvitation,
+  canManageMembership,
+  canReadProject,
+  canTransitionProjectStatus,
+  canUpdateProject,
+} from "@/lib/authz/policies"
+import { capabilitiesForRole } from "@/lib/authz/capabilities"
+import type { OrganizationRole, TenantContext } from "@/types/authzTypes"
 
-function context(userId: string): AuthenticatedUserContext {
+function context(role: OrganizationRole, organizationId = "organization_1"): TenantContext {
   return {
-    userId: `clerk_${userId}`,
+    userId: `clerk_${role}`,
     localUser: {
-      id: userId,
-      clerkUserId: `clerk_${userId}`,
-      email: `${userId}@example.com`,
-      displayName: userId,
+      id: `user_${role}`,
+      clerkUserId: `clerk_${role}`,
+      email: `${role}@example.com`,
+      displayName: role,
       status: "active",
     },
+    organization: { id: organizationId, status: "active" },
+    membership: { id: `membership_${role}`, role },
+    capabilities: capabilitiesForRole(role),
   }
 }
 
-describe("project authz policies", () => {
-  const project = {
-    ownerId: "user_owner",
-    memberships: [
-      { userId: "user_owner", role: "owner" as const },
-      { userId: "user_member", role: "member" as const },
-      { userId: "user_viewer", role: "viewer" as const },
-    ],
-  }
+describe("layered organization authorization", () => {
+  const activeProject = { organizationId: "organization_1", status: "active" as const }
 
-  it("allows owner, member, and viewer reads", () => {
-    expect(canReadProject(context("user_owner"), project)).toBe(true)
-    expect(canReadProject(context("user_member"), project)).toBe(true)
-    expect(canReadProject(context("user_viewer"), project)).toBe(true)
+  it("enforces tenant equality before project capabilities", () => {
+    expect(canReadProject(context("owner"), activeProject)).toBe(true)
+    expect(
+      canReadProject(context("owner"), {
+        ...activeProject,
+        organizationId: "organization_other",
+      })
+    ).toBe(false)
   })
 
-  it("allows only owners to update and manage members", () => {
-    expect(canUpdateProject(context("user_owner"), project)).toBe(true)
-    expect(canManageProjectMembers(context("user_owner"), project)).toBe(true)
-
-    expect(canUpdateProject(context("user_member"), project)).toBe(false)
-    expect(canManageProjectMembers(context("user_member"), project)).toBe(false)
+  it("separates project read, update, and workflow-state authority", () => {
+    expect(canReadProject(context("viewer"), activeProject)).toBe(true)
+    expect(canUpdateProject(context("viewer"), activeProject)).toBe(false)
+    expect(canUpdateProject(context("member"), activeProject)).toBe(true)
+    expect(canTransitionProjectStatus(context("admin"), activeProject, "archived")).toBe(true)
+    expect(canTransitionProjectStatus(context("admin"), activeProject, "active")).toBe(false)
+    expect(
+      canTransitionProjectStatus(
+        context("admin"),
+        { ...activeProject, status: "archived" },
+        "active"
+      )
+    ).toBe(true)
   })
 
-  it("denies cross-row access", () => {
-    expect(canReadProject(context("user_other"), project)).toBe(false)
-    expect(canUpdateProject(context("user_other"), project)).toBe(false)
-    expect(canManageProjectMembers(context("user_other"), project)).toBe(false)
+  it("prevents removing or demoting the last owner", () => {
+    const owner = context("owner")
+    const target = { organizationId: "organization_1", role: "owner" as const }
+
+    expect(canManageMembership(owner, target, 1, "admin")).toBe(false)
+    expect(canManageMembership(owner, target, 1, null)).toBe(false)
+    expect(canManageMembership(owner, target, 2, "admin")).toBe(true)
+  })
+
+  it("allows bounded invitations but never direct owner invitation", () => {
+    expect(canCreateInvitation(context("admin"), "member")).toBe(true)
+    expect(canCreateInvitation(context("admin"), "owner")).toBe(false)
+    expect(canCreateInvitation(context("member"), "viewer")).toBe(false)
   })
 })
