@@ -22,6 +22,7 @@
     "test:contract": "vitest run tests/contract",
     "test:integration": "vitest run tests/integration",
     "test:database-security": "pwsh -NoProfile -File scripts/Test-PostgresRls.ps1",
+    "test:connect-removal": "pwsh -NoProfile -File scripts/Test-ConnectRemoval.ps1",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",

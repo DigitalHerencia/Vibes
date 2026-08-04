@@ -14,11 +14,16 @@ current_models:
   - BillingSubscription
   - BillingSubscriptionItem
   - BillingEntitlement
+  - ConnectAccount
+  - ProviderConnectAccountBinding
+  - ConnectPayment
+  - ConnectRefund
+  - ConnectRecoverySnapshot
 identity:
   provider: clerk
   local_model: User
 authorization:
-  current_scope: organization tenant, tenant-owned Project resources, and local billing entitlements
+  current_scope: organization tenant, tenant-owned Project resources, local billing entitlements, and optional Connect resources
   membership_model: Membership
   role_model: OrganizationRole
   capability_source: lib/authz/capabilities.ts

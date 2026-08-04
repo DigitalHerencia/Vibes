@@ -12,12 +12,14 @@ describe("organization role capabilities", () => {
         "project.archive",
         "audit.read",
         "billing.manage",
+        "connect.manage",
       ])
     )
   })
 
   it("keeps billing and organization management out of delegated roles", () => {
     expect(hasCapability("admin", "billing.manage")).toBe(false)
+    expect(hasCapability("admin", "connect.manage")).toBe(false)
     expect(hasCapability("admin", "organization.manage")).toBe(false)
     expect(hasCapability("member", "membership.manage")).toBe(false)
     expect(hasCapability("viewer", "project.update")).toBe(false)

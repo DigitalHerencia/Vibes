@@ -17,7 +17,12 @@ providers:
     owns: [hosted_checkout, customer_portal, subscription_truth]
     webhook_route: /api/stripe/webhooks
     subscription_plan_count: 1
-    connect: not-implemented
+    connect:
+      status: code-present-optional
+      webhook_route: /api/stripe/connect/webhooks
+      charge_model: manual-capture destination charge
+      platform_liability: [stripe_fees, refunds, disputes]
+      removal_gate: pnpm test:connect-removal
 rules:
   provider_secrets_server_only: true
   browser_redirect_is_not_provider_truth: true

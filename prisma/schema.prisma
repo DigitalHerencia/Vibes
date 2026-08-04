@@ -47,6 +47,7 @@ enum AuditActorType {
 enum WebhookProvider {
   clerk
   stripe
+  stripe_connect
 }
 
 enum BillingSubscriptionStatus {
@@ -60,6 +61,47 @@ enum BillingSubscriptionStatus {
   paused
 }
 
+enum ConnectAccountStatus {
+  pending
+  restricted
+  ready
+}
+
+enum ConnectPaymentStatus {
+  checkout_pending
+  requires_payment_method
+  requires_confirmation
+  requires_action
+  processing
+  requires_capture
+  succeeded
+  canceled
+}
+
+enum ConnectRefundStatus {
+  pending
+  requires_action
+  succeeded
+  failed
+  canceled
+}
+
+enum ConnectRecoveryOperation {
+  onboarding
+  readiness
+  authorization
+  capture
+  cancel
+  refund
+  webhook
+}
+
+enum ConnectRecoveryOutcome {
+  synchronized
+  recovery_required
+  ignored
+}
+
 enum ProviderWebhookStatus {
   received
   processing
@@ -69,12 +111,12 @@ enum ProviderWebhookStatus {
 }
 
 model User {
-  id                     String     @id @default(cuid())
-  clerkUserId            String     @unique
-  email                  String?    @db.VarChar(320)
-  displayName            String?    @db.VarChar(120)
-  status                 UserStatus @default(active)
-  selectedOrganizationId String?
+  id                        String     @id @default(cuid())
+  clerkUserId               String     @unique
+  email                     String?    @db.VarChar(320)
+  displayName               String?    @db.VarChar(120)
+  status                    UserStatus @default(active)
+  selectedOrganizationId    String?
   identityProviderUpdatedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -101,15 +143,20 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  selectedByUsers User[]                   @relation("SelectedOrganization")
-  memberships     Membership[]
-  invitations     OrganizationInvitation[]
-  projects        Project[]
-  auditEvents     AuditEvent[]
-  billingCustomer BillingCustomer?
-  billingSubscription BillingSubscription?
-  billingEntitlements BillingEntitlement[]
-  providerCustomerBindings ProviderCustomerBinding[]
+  selectedByUsers                User[]                          @relation("SelectedOrganization")
+  memberships                    Membership[]
+  invitations                    OrganizationInvitation[]
+  projects                       Project[]
+  auditEvents                    AuditEvent[]
+  billingCustomer                BillingCustomer?
+  billingSubscription            BillingSubscription?
+  billingEntitlements            BillingEntitlement[]
+  providerCustomerBindings       ProviderCustomerBinding[]
+  connectAccount                 ConnectAccount?
+  connectPayments                ConnectPayment[]
+  connectRefunds                 ConnectRefund[]
+  connectRecoverySnapshots       ConnectRecoverySnapshot[]
+  providerConnectAccountBindings ProviderConnectAccountBinding[]
 
   @@index([status])
   @@index([updatedAt])
@@ -216,16 +263,16 @@ model ProviderWebhookEvent {
   id String @id @default(cuid())
 
   provider        WebhookProvider
-  providerEventId String @db.VarChar(255)
-  eventType       String @db.VarChar(120)
+  providerEventId String          @db.VarChar(255)
+  eventType       String          @db.VarChar(120)
 
   status       ProviderWebhookStatus @default(received)
   attemptCount Int                   @default(0)
 
-  receivedAt         DateTime  @default(now())
-  lastAttemptAt      DateTime?
+  receivedAt          DateTime  @default(now())
+  lastAttemptAt       DateTime?
   processingStartedAt DateTime?
-  processedAt        DateTime?
+  processedAt         DateTime?
 
   processingError String? @db.VarChar(500)
   safeMetadata    Json?
@@ -248,7 +295,7 @@ model BillingCustomer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   subscription BillingSubscription?
 
   @@index([organizationId])
@@ -256,9 +303,9 @@ model BillingCustomer {
 }
 
 model ProviderCustomerBinding {
-  id                 String @id @default(cuid())
+  id                 String          @id @default(cuid())
   provider           WebhookProvider
-  providerCustomerId String @db.VarChar(255)
+  providerCustomerId String          @db.VarChar(255)
   organizationId     String
 
   createdAt DateTime @default(now())
@@ -285,8 +332,8 @@ model BillingSubscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization  Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  billingCustomer BillingCustomer          @relation(fields: [billingCustomerId], references: [id], onDelete: Cascade)
+  organization    Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  billingCustomer BillingCustomer           @relation(fields: [billingCustomerId], references: [id], onDelete: Cascade)
   items           BillingSubscriptionItem[]
   entitlements    BillingEntitlement[]
 
@@ -328,4 +375,116 @@ model BillingEntitlement {
   @@index([organizationId, active])
   @@index([billingSubscriptionId])
   @@map("billing_entitlements")
+}
+
+model ConnectAccount {
+  id                   String               @id @default(cuid())
+  organizationId       String               @unique
+  stripeAccountId      String               @unique @db.VarChar(255)
+  country              String               @db.VarChar(2)
+  status               ConnectAccountStatus @default(pending)
+  detailsSubmitted     Boolean              @default(false)
+  chargesEnabled       Boolean              @default(false)
+  payoutsEnabled       Boolean              @default(false)
+  requirementsDueCount Int                  @default(0)
+  disabledReason       String?              @db.VarChar(160)
+  providerUpdatedAt    DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payments          ConnectPayment[]
+  recoverySnapshots ConnectRecoverySnapshot[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("connect_accounts")
+}
+
+model ProviderConnectAccountBinding {
+  id                String @id @default(cuid())
+  providerAccountId String @unique @db.VarChar(255)
+  organizationId    String
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("provider_connect_account_bindings")
+}
+
+model ConnectPayment {
+  id                      String               @id @default(cuid())
+  organizationId          String
+  connectAccountId        String
+  reference               String               @db.VarChar(120)
+  stripeCheckoutSessionId String?              @unique @db.VarChar(255)
+  stripePaymentIntentId   String?              @unique @db.VarChar(255)
+  latestChargeId          String?              @db.VarChar(255)
+  amountMinor             Int
+  currency                String               @db.VarChar(3)
+  platformFeeMinor        Int
+  status                  ConnectPaymentStatus @default(checkout_pending)
+  amountCapturableMinor   Int                  @default(0)
+  amountReceivedMinor     Int                  @default(0)
+  refundedAmountMinor     Int                  @default(0)
+  providerUpdatedAt       DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  connectAccount    ConnectAccount            @relation(fields: [connectAccountId], references: [id], onDelete: Restrict)
+  refunds           ConnectRefund[]
+  recoverySnapshots ConnectRecoverySnapshot[]
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status])
+  @@index([connectAccountId])
+  @@map("connect_payments")
+}
+
+model ConnectRefund {
+  id                String              @id @default(cuid())
+  organizationId    String
+  connectPaymentId  String
+  stripeRefundId    String              @unique @db.VarChar(255)
+  amountMinor       Int
+  status            ConnectRefundStatus
+  providerUpdatedAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payment      ConnectPayment @relation(fields: [connectPaymentId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([connectPaymentId])
+  @@map("connect_refunds")
+}
+
+model ConnectRecoverySnapshot {
+  id               String                   @id @default(cuid())
+  organizationId   String
+  connectAccountId String?
+  connectPaymentId String?
+  operation        ConnectRecoveryOperation
+  outcome          ConnectRecoveryOutcome
+  providerObjectId String                   @db.VarChar(255)
+  providerStatus   String                   @db.VarChar(80)
+  safeMetadata     Json?
+
+  createdAt DateTime @default(now())
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  connectAccount ConnectAccount? @relation(fields: [connectAccountId], references: [id], onDelete: Cascade)
+  connectPayment ConnectPayment? @relation(fields: [connectPaymentId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([connectAccountId])
+  @@index([connectPaymentId])
+  @@map("connect_recovery_snapshots")
 }
