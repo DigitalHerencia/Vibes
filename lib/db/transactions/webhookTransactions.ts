@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@/prisma/generated/prisma/client"
-import type { NormalizedClerkEvent, NormalizedClerkUserEvent } from "@/types/webhookTypes"
+import type { ClaimableProviderEvent, NormalizedClerkUserEvent } from "@/types/webhookTypes"
 
 type TransactionHost = Pick<PrismaClient, "$transaction">
 
@@ -10,7 +10,7 @@ export type WebhookClaim =
 
 export async function claimProviderWebhookEvent(
   host: TransactionHost,
-  event: NormalizedClerkEvent,
+  event: ClaimableProviderEvent,
   now: Date,
   staleAfterMs: number
 ): Promise<WebhookClaim> {

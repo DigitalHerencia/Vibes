@@ -4,7 +4,14 @@ import {
   canTransitionProjectStatus,
   canUpdateProject,
 } from "@/lib/authz/policies"
-import type { OrganizationRole, TenantContext } from "@/types/authzTypes"
+import type { Capability, OrganizationRole, TenantContext } from "@/types/authzTypes"
+import { hasCapability } from "@/lib/authz/capabilities"
+
+export function assertCapability(context: TenantContext, capability: Capability): void {
+  if (!hasCapability(context.membership.role, capability)) {
+    throw new Error("Capability denied.")
+  }
+}
 
 type ProjectAccessRecord = {
   organizationId: string

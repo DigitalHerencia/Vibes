@@ -4,7 +4,7 @@ authority: current-source-contract
 public: ["/", "/pricing", "/faq"]
 auth: ["/sign-in", "/sign-up"]
 protected: ["/dashboard", "/projects", "/projects/new", "/projects/[projectId]", "/settings"]
-api: ["/api/clerk/webhooks"]
+api: ["/api/clerk/webhooks", "/api/stripe/webhooks"]
 reference_catalog:
   status: currently-exposed
   route_group: app/(presentation)

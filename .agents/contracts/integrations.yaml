@@ -13,7 +13,11 @@ providers:
     status: code-present
     owns: [postgresql_service]
   stripe:
-    status: not-implemented
+    status: code-present
+    owns: [hosted_checkout, customer_portal, subscription_truth]
+    webhook_route: /api/stripe/webhooks
+    subscription_plan_count: 1
+    connect: not-implemented
 rules:
   provider_secrets_server_only: true
   browser_redirect_is_not_provider_truth: true
@@ -21,4 +25,6 @@ rules:
   webhook_states: [received, processing, processed, ignored, failed]
   terminal_duplicate_acknowledged: true
   failed_and_stale_claims_retryable: true
+  redirect_grants_entitlement: false
+  reconciliation_auto_repair: false
   live_configuration_requires_separate_verification: true

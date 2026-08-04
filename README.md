@@ -47,6 +47,9 @@ DIRECT_DATABASE_URL
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 CLERK_SECRET_KEY
 CLERK_WEBHOOK_SIGNING_SECRET
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+STRIPE_RECURRING_PRICE_ID
 NEXT_PUBLIC_APP_URL
 ```
 
@@ -70,6 +73,7 @@ app/(tenant)/
   /settings               Clerk account profile
 
 app/api/clerk/webhooks     Provider webhook only
+app/api/stripe/webhooks    Provider webhook only
 ```
 
 The repository also currently compiles presentation/reference routes from `app/(presentation)` and the `D1`, `pA`-`pC`, and `tA`-`tC` examples. They are accurately recorded as a known isolation gap in `.agents/contracts/routes.yaml`; ADR-0009 defines the intended boundary without claiming it is already implemented.
@@ -81,7 +85,7 @@ Clerk identifies the authenticated user. Clerk organizations are intentionally n
 Authorization is local and row-backed:
 
 - `User` stores the local account mapped to `clerkUserId`.
-- `Organization` is the tenant and future billing boundary.
+- `Organization` is the tenant and billing boundary.
 - `Membership` joins users to organizations with `owner`, `admin`, `member`, or `viewer` roles; roles aggregate stable capabilities in `lib/authz`.
 - `OrganizationInvitation` stores bounded, expiring invitations without delegating authority to Clerk metadata.
 - `Project` remains a removable tenant-owned sample resource, never the tenant itself.
@@ -90,6 +94,8 @@ Authorization is local and row-backed:
 The committed Prisma baseline creates a non-login `vibes_runtime` privilege role, explicit grants, and forced tenant RLS policies. Runtime code sets `app.current_organization_id` transaction-locally through `lib/db/withTenantContext.ts`; missing context fails closed. `pnpm test:database-security` replays the migration in ephemeral PostgreSQL and executes direct containment attacks. Live runtime-login provisioning and production migration remain owner-controlled deployment gates.
 
 Clerk user synchronization enters only through the public `/api/clerk/webhooks` route. The route uses Clerk's verifier, runtime-validates provider values, and delegates to an atomic shared ledger with `received`, `processing`, `processed`, `ignored`, and `failed` states. Failed claims retry immediately; processing claims become retryable after five minutes. Session helpers are read-only, and local memberships/capabilities—not Clerk metadata—remain authorization truth.
+
+Stripe subscription billing provides one server-configured recurring plan through hosted Checkout and Customer Portal sessions. Only local owners with `billing.manage` can create those sessions; tenant, customer, price, and return URLs are server-derived. The verified `/api/stripe/webhooks` route retrieves current Stripe state, normalizes it into tenant-owned subscription/item records, and updates the local `core` entitlement atomically. Browser return pages never grant access. Drift inspection is read-only and never auto-repairs provider or local state.
 
 ## Architecture Rule
 

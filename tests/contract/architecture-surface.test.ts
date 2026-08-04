@@ -53,7 +53,7 @@ describe("architecture surface", () => {
 
   it("keeps app API routes scoped to provider webhooks", () => {
     const routes = files("app/api")
-    expect(routes).toEqual(["app/api/clerk/webhooks/route.ts"])
+    expect(routes).toEqual(["app/api/clerk/webhooks/route.ts", "app/api/stripe/webhooks/route.ts"])
   })
 
   it("resolves every local alias import from committed source", () => {

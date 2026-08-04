@@ -32,7 +32,7 @@ Subscription billing belongs to the tenant. Checkout and Portal require `billing
 ### Negative
 
 - **NEG-001**: Webhook lag and reconciliation need explicit product behavior.
-- **NEG-002**: Stripe subscription billing is not currently implemented.
+- **NEG-002**: Live product, price, portal, webhook, and authenticated-journey configuration remains an owner-operated deployment concern.
 
 ## Alternatives Considered
 
@@ -45,6 +45,8 @@ Subscription billing belongs to the tenant. Checkout and Portal require `billing
 
 - **IMP-001**: Provider identifiers never come from client authority.
 - **IMP-002**: Checkout success pages grant no entitlement.
+- **IMP-003**: The reusable foundation supports one recurring price and local `core` entitlement.
+- **IMP-004**: Reconciliation reports drift and does not mutate either side.
 
 ## References
 

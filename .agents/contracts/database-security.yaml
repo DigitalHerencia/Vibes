@@ -25,9 +25,14 @@ protected_tables:
   organization_invitations: organizationId
   projects: organizationId
   audit_events: organizationId
+  billing_customers: organizationId
+  billing_subscriptions: organizationId
+  billing_subscription_items: parent subscription organizationId
+  billing_entitlements: organizationId
 global_tables:
   users: local identity
   provider_webhook_events: provider event ledger
+  provider_customer_bindings: opaque provider customer to organization locator for verified webhooks
 policy_commands: [SELECT, INSERT, UPDATE, DELETE]
 rls:
   enabled: true

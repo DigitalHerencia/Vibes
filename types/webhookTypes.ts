@@ -36,6 +36,13 @@ export type IgnoredClerkEvent = {
 
 export type NormalizedClerkEvent = NormalizedClerkUserEvent | IgnoredClerkEvent
 
+export type ClaimableProviderEvent = {
+  provider: "clerk" | "stripe"
+  providerEventId: string
+  eventType: string
+  safeMetadata: Record<string, string | null>
+}
+
 export type WebhookProcessingResult = {
   ok: boolean
   status: "processed" | "ignored" | "duplicate" | "processing" | "failed"
