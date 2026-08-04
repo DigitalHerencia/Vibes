@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { assertCanUpdateProject } from "@/lib/authz/assertions"
 import { requireCurrentUserContext } from "@/lib/auth/session"
 import { revalidateProjectSurfaces } from "@/lib/cache/revalidate"
-import { prisma } from "@/lib/db/prisma"
+import { getPrisma } from "@/lib/db/prisma"
 import { projectDetailSelect } from "@/lib/db/selects/project.selects"
 import { createProjectTx, updateProjectTx } from "@/lib/db/transactions/projectTransactions"
 import { createProjectSchema, updateProjectSchema } from "@/schemas/projectSchemas"
@@ -16,7 +16,9 @@ function formString(formData: FormData, key: string): string {
   return typeof value === "string" ? value : ""
 }
 
-export async function createProjectAction(formData: FormData): Promise<ActionResult<{ id: string }>> {
+export async function createProjectAction(
+  formData: FormData
+): Promise<ActionResult<{ id: string }>> {
   const context = await requireCurrentUserContext()
   const parsed = createProjectSchema.safeParse({
     name: formString(formData, "name"),
@@ -24,9 +26,14 @@ export async function createProjectAction(formData: FormData): Promise<ActionRes
   })
 
   if (!parsed.success) {
-    return actionFailure("INVALID_INPUT", "Check the project details.", parsed.error.flatten().fieldErrors)
+    return actionFailure(
+      "INVALID_INPUT",
+      "Check the project details.",
+      parsed.error.flatten().fieldErrors
+    )
   }
 
+  const prisma = getPrisma()
   const project = await prisma.$transaction((tx) =>
     createProjectTx(tx, {
       ...parsed.data,
@@ -50,9 +57,14 @@ export async function updateProjectAction(
   })
 
   if (!parsed.success) {
-    return actionFailure("INVALID_INPUT", "Check the project details.", parsed.error.flatten().fieldErrors)
+    return actionFailure(
+      "INVALID_INPUT",
+      "Check the project details.",
+      parsed.error.flatten().fieldErrors
+    )
   }
 
+  const prisma = getPrisma()
   const project = await prisma.project.findUnique({
     where: { id: parsed.data.projectId },
     select: projectDetailSelect,

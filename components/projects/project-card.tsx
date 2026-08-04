@@ -9,7 +9,10 @@ type ProjectCardProps = {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <a href={`/projects/${project.id}`} className="block border bg-card p-5 no-underline hover:border-primary">
+    <a
+      href={`/projects/${project.id}`}
+      className="block border bg-card p-5 no-underline hover:border-primary"
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <Badge>{project.role}</Badge>

@@ -1,6 +1,3 @@
-"use client"
-
-import * as React from "react"
 import {
   FAQAccordion,
   FAQSimpleList,
@@ -27,8 +24,6 @@ const items: FAQItem[] = [
 ]
 
 export function FaqSectionFeatureClient() {
-  const [activeCategory, setActiveCategory] = React.useState(0)
-
   return (
     <main className="p-8 md:p-12">
       <section className="grid gap-8 md:gap-16">
@@ -45,8 +40,6 @@ export function FaqSectionFeatureClient() {
             { name: "Payments", items: items.slice(0, 2) },
             { name: "Boundaries", items: items.slice(2) },
           ]}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
         />
         <FAQWithContact
           title="Support FAQ"

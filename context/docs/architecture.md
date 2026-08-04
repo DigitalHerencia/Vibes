@@ -281,7 +281,7 @@ Provider integrations must never create marketplace, messaging, dispute, evidenc
 
 Only provider webhooks are allowed:
 
-- `app/api/clerk/webhook-handler/route.ts`
+- `app/api/clerk/webhooks/route.ts`
 - `app/api/stripe/webhooks/route.ts`
 
 No internal app mutation API routes.

@@ -33,7 +33,7 @@ const eslintConfig = defineConfig([
       "prisma/generated/**",
       "next-env.d.ts",
       "*.config.js",
-      "*.config.cjs"
+      "*.config.cjs",
     ],
     "next-stack-template global ignores"
   ),

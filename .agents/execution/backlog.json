@@ -10,16 +10,8 @@
         "C:/Users/scree/Documents/DevNotes/10 PROJECTS/Vouch/Vouch Source of Truth.md",
         "C:/Users/scree/Documents/DevNotes/10 PROJECTS/Vouch/vouch_page_taxonomy.md"
       ],
-      "impacted_paths": [
-        ".codex/docs",
-        "components",
-        "features",
-        "app"
-      ],
-      "validation": [
-        "pnpm validate:contracts",
-        "pnpm typecheck"
-      ]
+      "impacted_paths": [".codex/docs", "components", "features", "app"],
+      "validation": ["pnpm validate:contracts", "pnpm typecheck"]
     }
   ]
 }

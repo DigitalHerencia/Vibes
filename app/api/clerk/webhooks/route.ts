@@ -2,7 +2,6 @@ import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 import { Webhook } from "svix"
 
-import { processClerkWebhookEvent } from "@/lib/actions/authActions"
 import { getOptionalEnv } from "@/lib/env"
 
 export async function POST(request: Request) {
@@ -36,6 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid webhook signature." }, { status: 400 })
   }
 
+  const { processClerkWebhookEvent } = await import("@/lib/actions/authActions")
   const result = await processClerkWebhookEvent(
     event as { type: string; data: { id: string } },
     svixId

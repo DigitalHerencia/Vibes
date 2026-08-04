@@ -10,18 +10,22 @@ export default function PricingPage() {
         description="The starter ships with product boundaries, not a billing product. Add Stripe or another provider under lib/providers when the business model is known."
       />
       <ProcessPanel
+        title="Billing boundaries"
         steps={[
           {
             title: "No hidden billing",
-            description: "No subscription, checkout, or invoice paths are generated until the app needs them.",
+            description:
+              "No subscription, checkout, or invoice paths are generated until the app needs them.",
           },
           {
             title: "Provider isolated",
-            description: "Payment SDK calls belong behind provider adapters, never in pages or components.",
+            description:
+              "Payment SDK calls belong behind provider adapters, never in pages or components.",
           },
           {
             title: "State first",
-            description: "Billing DTOs should expose safe status and references, not raw provider objects.",
+            description:
+              "Billing DTOs should expose safe status and references, not raw provider objects.",
           },
         ]}
       />

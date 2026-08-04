@@ -225,7 +225,9 @@ const defaultNotifications: NotificationSetting[] = [
   },
 ]
 
-export function NotificationSettings({ notifications = defaultNotifications }: NotificationSettingsProps) {
+export function NotificationSettings({
+  notifications = defaultNotifications,
+}: NotificationSettingsProps) {
   return (
     <Card>
       <CardHeader>
@@ -392,9 +394,7 @@ export interface AppearanceSettingsProps {
   onAccentColorChange?: (color: string) => void
 }
 
-export function AppearanceSettings({
-  theme = "system",
-}: AppearanceSettingsProps) {
+export function AppearanceSettings({ theme = "system" }: AppearanceSettingsProps) {
   return (
     <Card>
       <CardHeader>
@@ -419,8 +419,8 @@ export function AppearanceSettings({
                 type="button"
                 className={
                   theme === value
-                    ? "flex flex-col items-center gap-2 border-3 border-neutral-400 p-4 transition-all bg-blue-600 text-white shadow-[4px_4px_0px_oklch(54.6%_0.245_262.881)]"
-                    : "flex flex-col items-center gap-2 border-3 border-neutral-400 p-4 transition-all bg-black hover:bg-black"
+                    ? "flex flex-col items-center gap-2 border-3 border-neutral-400 bg-blue-600 p-4 text-white shadow-[4px_4px_0px_oklch(54.6%_0.245_262.881)] transition-all"
+                    : "flex flex-col items-center gap-2 border-3 border-neutral-400 bg-black p-4 transition-all hover:bg-black"
                 }
               >
                 <Icon className="h-6 w-6" />

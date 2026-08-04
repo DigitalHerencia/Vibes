@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { BadgeCheck, Building, CreditCard, Shield, User } from "lucide-react"
 
 import {
@@ -58,41 +57,10 @@ const goals = [
 ]
 
 export function OnboardingFlowFeatureClient() {
-  const [currentStep, setCurrentStep] = React.useState(0)
-  const [name, setName] = React.useState("")
-  const [role, setRole] = React.useState("")
-  const [interests, setInterests] = React.useState<string[]>([])
-  const [workspaceName, setWorkspaceName] = React.useState("")
-  const [memberEmail, setMemberEmail] = React.useState("")
-  const [members, setMembers] = React.useState<string[]>([])
-  const [selectedGoals, setSelectedGoals] = React.useState<string[]>([])
-
-  function toggleInterest(interest: string) {
-    setInterests((current) =>
-      current.includes(interest)
-        ? current.filter((item) => item !== interest)
-        : [...current, interest]
-    )
-  }
-
-  function addMember() {
-    if (!memberEmail || members.includes(memberEmail)) return
-    setMembers((current) => [...current, memberEmail])
-    setMemberEmail("")
-  }
-
-  function toggleGoal(goalId: string) {
-    setSelectedGoals((current) =>
-      current.includes(goalId) ? current.filter((item) => item !== goalId) : [...current, goalId]
-    )
-  }
-
   return (
     <main className="p-8 md:p-12">
       <section className="grid gap-8 md:gap-16">
         <OnboardingWizard
-          currentStep={currentStep}
-          onStepChange={setCurrentStep}
           steps={[
             {
               id: "profile",
@@ -126,27 +94,9 @@ export function OnboardingFlowFeatureClient() {
           primaryAction={{ label: "Begin" }}
           secondaryAction={{ label: "Skip" }}
         />
-        <ProfileSetup
-          name={name}
-          role={role}
-          interests={interests}
-          onNameChange={setName}
-          onRoleChange={setRole}
-          onInterestToggle={toggleInterest}
-        />
-        <WorkspaceSetup
-          workspaceName={workspaceName}
-          memberEmail={memberEmail}
-          members={members}
-          onWorkspaceNameChange={setWorkspaceName}
-          onMemberEmailChange={setMemberEmail}
-          onAddMember={addMember}
-          onRemoveMember={(email) =>
-            setMembers((current) => current.filter((item) => item !== email))
-          }
-          onSkip={() => undefined}
-        />
-        <GoalSelection goals={goals} selectedGoals={selectedGoals} onGoalToggle={toggleGoal} />
+        <ProfileSetup />
+        <WorkspaceSetup onSkip={() => undefined} />
+        <GoalSelection goals={goals} />
         <CompletionScreen
           features={[
             {

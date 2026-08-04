@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { mapProjectDetailDTO, mapProjectSummaryDTO } from "@/lib/dto/project.mappers"
+import { mapProjectDetailDTO, mapProjectSummaryDTO } from "@/lib/db/dto/project.mappers"
 
 describe("project DTO mappers", () => {
   const now = new Date("2026-05-20T18:00:00.000Z")

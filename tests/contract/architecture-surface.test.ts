@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { execSync } from "node:child_process"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
@@ -11,12 +11,22 @@ function files(commandPattern: string): string[] {
   return output ? output.split(/\r?\n/).map((file) => file.replaceAll("\\", "/")) : []
 }
 
+const sourceExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]
+
+function resolvesLocalImport(specifier: string): boolean {
+  const target = join(root, specifier.slice(2))
+  return (
+    sourceExtensions.some((extension) => existsSync(`${target}${extension}`)) ||
+    sourceExtensions.some((extension) => existsSync(join(target, `index${extension}`)))
+  )
+}
+
 describe("architecture surface", () => {
   it("keeps Prisma imports out of routes, features, and components", () => {
     const sourceFiles = files("rg --files app features components")
     const offenders = sourceFiles.filter((file) => {
       const body = readFileSync(join(root, file), "utf8")
-      return body.includes("@/prisma/") || body.includes("from \"@prisma")
+      return body.includes("@/prisma/") || body.includes('from "@prisma')
     })
 
     expect(offenders).toEqual([])
@@ -35,6 +45,31 @@ describe("architecture surface", () => {
   it("keeps app API routes scoped to provider webhooks", () => {
     const routes = files("rg --files app/api")
     expect(routes).toEqual(["app/api/clerk/webhooks/route.ts"])
+  })
+
+  it("resolves every local alias import from committed source", () => {
+    const sourceFiles = files("rg --files app components features lib schemas tests")
+    const unresolved = sourceFiles.flatMap((file) => {
+      const body = readFileSync(join(root, file), "utf8")
+      const specifiers = [...body.matchAll(/(?:from\s+|import\s*\()\s*[\"'](@\/[^\"']+)[\"']/g)]
+      return specifiers
+        .map((match) => match[1])
+        .filter((specifier): specifier is string => Boolean(specifier))
+        .filter((specifier) => !resolvesLocalImport(specifier))
+        .map((specifier) => `${file}: ${specifier}`)
+    })
+
+    expect([...new Set(unresolved)].sort()).toEqual([])
+  })
+
+  it("does not retain Vouch-only runtime imports", () => {
+    const sourceFiles = files("rg --files app components features lib schemas")
+    const offenders = sourceFiles.filter((file) => {
+      const body = readFileSync(join(root, file), "utf8")
+      return /@\/(?:components\/vouches|content\/vouches)/.test(body)
+    })
+
+    expect(offenders).toEqual([])
   })
 
   it("parses agent contracts as YAML", () => {

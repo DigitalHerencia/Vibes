@@ -18,10 +18,11 @@ import { cn } from "@/lib/utils"
 // ============================================================================
 
 export interface ProcessPanelStep {
-  number: string
+  number?: string
   title: string
-  body: string
-  icon: LucideIcon
+  body?: string
+  description?: string
+  icon?: LucideIcon
 }
 
 export interface ProcessPanelProps {
@@ -41,23 +42,25 @@ export function ProcessPanel({ title, steps, footer, id }: ProcessPanelProps) {
       </CardHeader>
 
       <CardContent className="p-0">
-        {steps.map((step) => {
-          const Icon = step.icon
+        {steps.map((step, index) => {
+          const Icon = step.icon ?? ShieldCheck
+          const number = step.number ?? String(index + 1)
+          const body = step.body ?? step.description
 
           return (
             <section
-              key={`${step.number}-${step.title}`}
+              key={`${number}-${step.title}`}
               className="border-b-3 border-neutral-400 last:border-b-0"
             >
               <div className="grid min-h-31 min-w-0 grid-cols-[minmax(0,1fr)_7rem] md:min-h-34 md:grid-cols-[minmax(0,1fr)_140px]">
                 <div className="flex min-w-0 items-center gap-4 px-4 py-5 md:gap-6 md:px-7">
                   <div className="flex size-18 shrink-0 items-center justify-center border-3 border-neutral-400 md:size-22">
-                    <h5 className="font-extrabold">{step.number}</h5>
+                    <h5 className="font-extrabold">{number}</h5>
                   </div>
 
                   <div>
                     <h3 className="tracking-normal text-white">{step.title}</h3>
-                    <p className="font-semibold text-neutral-400">{step.body}</p>
+                    {body ? <p className="font-semibold text-neutral-400">{body}</p> : null}
                   </div>
                 </div>
 

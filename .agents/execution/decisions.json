@@ -12,6 +12,12 @@
       "title": "Keep Stripe-hosted provider surfaces",
       "status": "accepted",
       "rationale": "Payment, payment method, identity, payout onboarding, and authorization collection remain hosted by Stripe."
+    },
+    {
+      "id": "DEC-003",
+      "title": "Use the plural Clerk webhook route",
+      "status": "accepted",
+      "rationale": "The owner authorized /api/clerk/webhooks as the canonical route for Issue #3."
     }
   ]
 }

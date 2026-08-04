@@ -29,6 +29,7 @@ export default function HomePage() {
         ]}
       />
       <ProcessPanel
+        title="How the stack works"
         steps={[
           {
             title: "Identify",
@@ -40,7 +41,8 @@ export default function HomePage() {
           },
           {
             title: "Persist",
-            description: "Server Actions validate inputs and transactions write deterministic state.",
+            description:
+              "Server Actions validate inputs and transactions write deterministic state.",
           },
         ]}
       />
