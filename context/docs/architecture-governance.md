@@ -135,7 +135,7 @@ An existing event row is not proof of completed processing. Store bounded saniti
 - Use minimal selects and DTOs to constrain exposure.
 - Keep credentials and provider SDK semantics in server-owned integration boundaries.
 - Preserve atomic invariants with transactions and repeated-provider safety with idempotency.
-- Organization tenancy, capability RBAC, PostgreSQL RLS, shared webhook claims, and Stripe subscription billing are implemented with executable local proof; treat live-environment role provisioning, live Clerk/Stripe configuration and authenticated journeys, Stripe Connect, and catalog isolation as incomplete until their owning gates provide fresh evidence.
+- Organization tenancy, capability RBAC, PostgreSQL RLS, shared webhook claims, Stripe subscription billing, and the optional Stripe Connect code reference are implemented with executable local proof; treat live-environment role provisioning, live Clerk/Stripe configuration and authenticated journeys, Connect liability/provider configuration, and catalog isolation as incomplete until their owning gates provide fresh evidence.
 
 ## Presentation contract
 

@@ -14,6 +14,7 @@ export type Capability =
   | "project.archive"
   | "audit.read"
   | "billing.manage"
+  | "connect.manage"
 
 export type TenantContext = AuthenticatedUserContext & {
   organization: {

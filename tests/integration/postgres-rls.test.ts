@@ -168,6 +168,110 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
         },
       ],
     })
+    await admin.connectAccount.createMany({
+      data: [
+        {
+          id: "connect_account_a",
+          organizationId: organizationA,
+          stripeAccountId: "acct_rls_a",
+          country: "US",
+          status: "ready",
+          detailsSubmitted: true,
+          chargesEnabled: true,
+          payoutsEnabled: true,
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "connect_account_b",
+          organizationId: organizationB,
+          stripeAccountId: "acct_rls_b",
+          country: "US",
+          status: "ready",
+          detailsSubmitted: true,
+          chargesEnabled: true,
+          payoutsEnabled: true,
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    })
+    await admin.connectPayment.createMany({
+      data: [
+        {
+          id: "connect_payment_a",
+          organizationId: organizationA,
+          connectAccountId: "connect_account_a",
+          reference: "rls-a",
+          amountMinor: 1000,
+          currency: "usd",
+          platformFeeMinor: 100,
+          status: "succeeded",
+          amountReceivedMinor: 1000,
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "connect_payment_b",
+          organizationId: organizationB,
+          connectAccountId: "connect_account_b",
+          reference: "rls-b",
+          amountMinor: 1000,
+          currency: "usd",
+          platformFeeMinor: 100,
+          status: "succeeded",
+          amountReceivedMinor: 1000,
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    })
+    await admin.connectRefund.createMany({
+      data: [
+        {
+          id: "connect_refund_a",
+          organizationId: organizationA,
+          connectPaymentId: "connect_payment_a",
+          stripeRefundId: "re_rls_a",
+          amountMinor: 1000,
+          status: "succeeded",
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "connect_refund_b",
+          organizationId: organizationB,
+          connectPaymentId: "connect_payment_b",
+          stripeRefundId: "re_rls_b",
+          amountMinor: 1000,
+          status: "succeeded",
+          providerUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    })
+    await admin.connectRecoverySnapshot.createMany({
+      data: [
+        {
+          id: "connect_recovery_a",
+          organizationId: organizationA,
+          connectPaymentId: "connect_payment_a",
+          operation: "refund",
+          outcome: "synchronized",
+          providerObjectId: "re_rls_a",
+          providerStatus: "succeeded",
+        },
+        {
+          id: "connect_recovery_b",
+          organizationId: organizationB,
+          connectPaymentId: "connect_payment_b",
+          operation: "refund",
+          outcome: "synchronized",
+          providerObjectId: "re_rls_b",
+          providerStatus: "succeeded",
+        },
+      ],
+    })
 
     const runtimeUrl = new URL(adminUrl)
     runtimeUrl.username = "vibes_test_runtime"
@@ -214,6 +318,10 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
     await expect(runtime.project.findMany()).resolves.toEqual([])
     await expect(runtime.billingCustomer.findMany()).resolves.toEqual([])
     await expect(runtime.billingSubscriptionItem.findMany()).resolves.toEqual([])
+    await expect(runtime.connectAccount.findMany()).resolves.toEqual([])
+    await expect(runtime.connectPayment.findMany()).resolves.toEqual([])
+    await expect(runtime.connectRefund.findMany()).resolves.toEqual([])
+    await expect(runtime.connectRecoverySnapshot.findMany()).resolves.toEqual([])
     await expect(
       runtime.project.create({
         data: {
@@ -243,6 +351,12 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
         }),
         billingItems: await tx.billingSubscriptionItem.findMany({ select: { id: true } }),
         entitlements: await tx.billingEntitlement.findMany({ select: { organizationId: true } }),
+        connectAccounts: await tx.connectAccount.findMany({ select: { organizationId: true } }),
+        connectPayments: await tx.connectPayment.findMany({ select: { organizationId: true } }),
+        connectRefunds: await tx.connectRefund.findMany({ select: { organizationId: true } }),
+        connectRecovery: await tx.connectRecoverySnapshot.findMany({
+          select: { organizationId: true },
+        }),
       }),
       undefined,
       runtime
@@ -255,6 +369,10 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
     expect(result.billingSubscriptions).toEqual([{ organizationId: organizationA }])
     expect(result.billingItems).toEqual([{ id: "billing_item_a" }])
     expect(result.entitlements).toEqual([{ organizationId: organizationA }])
+    expect(result.connectAccounts).toEqual([{ organizationId: organizationA }])
+    expect(result.connectPayments).toEqual([{ organizationId: organizationA }])
+    expect(result.connectRefunds).toEqual([{ organizationId: organizationA }])
+    expect(result.connectRecovery).toEqual([{ organizationId: organizationA }])
   })
 
   it("permits same-tenant DML while keeping audit records immutable", async () => {
@@ -338,6 +456,25 @@ describe.skipIf(!hasDatabase)("PostgreSQL tenant containment", () => {
         runtime
       )
     ).resolves.toEqual({ count: 0 })
+
+    await expect(
+      withTenantContext(
+        organizationA,
+        (tx) =>
+          tx.connectRefund.create({
+            data: {
+              organizationId: organizationB,
+              connectPaymentId: "connect_payment_b",
+              stripeRefundId: "re_cross",
+              amountMinor: 100,
+              status: "pending",
+              providerUpdatedAt: new Date(),
+            },
+          }),
+        undefined,
+        runtime
+      )
+    ).rejects.toThrow()
 
     await expect(
       withTenantContext(

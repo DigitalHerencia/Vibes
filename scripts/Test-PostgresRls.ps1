@@ -46,7 +46,7 @@ try {
 
   $env:TEST_DATABASE_ADMIN_URL = $adminUrl
   $env:TEST_DATABASE_RUNTIME_PASSWORD = $runtimePassword
-  corepack pnpm exec vitest run --config vitest.integration.config.ts tests/integration/postgres-rls.test.ts tests/integration/webhook-processing.test.ts tests/integration/stripe-billing.test.ts
+  corepack pnpm exec vitest run --config vitest.integration.config.ts tests/integration/postgres-rls.test.ts tests/integration/webhook-processing.test.ts tests/integration/stripe-billing.test.ts tests/integration/stripe-connect.test.ts
   if ($LASTEXITCODE -ne 0) { throw "PostgreSQL security integration tests failed." }
 }
 finally {

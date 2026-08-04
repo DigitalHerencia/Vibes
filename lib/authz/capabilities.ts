@@ -13,6 +13,7 @@ const roleCapabilities = {
     "project.archive",
     "audit.read",
     "billing.manage",
+    "connect.manage",
   ],
   admin: [
     "organization.read",

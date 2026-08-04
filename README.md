@@ -50,6 +50,10 @@ CLERK_WEBHOOK_SIGNING_SECRET
 STRIPE_SECRET_KEY
 STRIPE_WEBHOOK_SECRET
 STRIPE_RECURRING_PRICE_ID
+STRIPE_CONNECT_WEBHOOK_SECRET
+STRIPE_CONNECT_COUNTRY
+STRIPE_CONNECT_CURRENCY
+STRIPE_CONNECT_PLATFORM_FEE_BPS
 NEXT_PUBLIC_APP_URL
 ```
 
@@ -74,6 +78,7 @@ app/(tenant)/
 
 app/api/clerk/webhooks     Provider webhook only
 app/api/stripe/webhooks    Provider webhook only
+app/api/stripe/connect/webhooks  Optional Connect webhook only
 ```
 
 The repository also currently compiles presentation/reference routes from `app/(presentation)` and the `D1`, `pA`-`pC`, and `tA`-`tC` examples. They are accurately recorded as a known isolation gap in `.agents/contracts/routes.yaml`; ADR-0009 defines the intended boundary without claiming it is already implemented.
@@ -96,6 +101,8 @@ The committed Prisma baseline creates a non-login `vibes_runtime` privilege role
 Clerk user synchronization enters only through the public `/api/clerk/webhooks` route. The route uses Clerk's verifier, runtime-validates provider values, and delegates to an atomic shared ledger with `received`, `processing`, `processed`, `ignored`, and `failed` states. Failed claims retry immediately; processing claims become retryable after five minutes. Session helpers are read-only, and local memberships/capabilities—not Clerk metadata—remain authorization truth.
 
 Stripe subscription billing provides one server-configured recurring plan through hosted Checkout and Customer Portal sessions. Only local owners with `billing.manage` can create those sessions; tenant, customer, price, and return URLs are server-derived. The verified `/api/stripe/webhooks` route retrieves current Stripe state, normalizes it into tenant-owned subscription/item records, and updates the local `core` entitlement atomically. Browser return pages never grant access. Drift inspection is read-only and never auto-repairs provider or local state.
+
+The optional Stripe Connect reference module is separate from subscription billing. It uses Stripe-hosted onboarding and Checkout with manual-capture destination charges, server-owned amount/currency/fee/account scope, retrieve-before-settlement, full-refund transfer and application-fee reversal, and normalized tenant mirrors. The platform bears Stripe fees, refunds, and disputes for this model. See `docs/stripe-connect-reference.md`; `pnpm test:connect-removal` proves the core production build after physically removing the optional runtime files.
 
 ## Architecture Rule
 
