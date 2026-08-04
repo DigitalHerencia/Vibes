@@ -1,4 +1,7 @@
 import type { OrganizationRole } from "@/types/authzTypes"
+import type { ActionResult } from "@/types/actionResultTypes"
+
+export type ProjectActionState = ActionResult<{ id: string }> | null
 
 export type OrganizationMembershipDTO = {
   id: string
@@ -28,5 +31,11 @@ export type ProjectDetailDTO = ProjectSummaryDTO & {
 
 export type ProjectListStateDTO = {
   projects: ProjectSummaryDTO[]
+  empty: boolean
+}
+
+export type DashboardStateDTO = {
+  projectCount: number
+  recentProjects: ProjectSummaryDTO[]
   empty: boolean
 }

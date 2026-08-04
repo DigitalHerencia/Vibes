@@ -1,0 +1,31 @@
+id: vibes.server-operations
+version: 1
+authority: current-source-and-validator-contract
+flow: route -> feature -> fetcher/action -> workflow -> transaction/provider
+inventory:
+  prisma_runtime: [lib/db, lib/webhooks]
+  raw_sql: [lib/db/withTenantContext.ts]
+  clerk_backend: [lib/auth, proxy.ts, app/api/clerk/webhooks]
+  stripe_sdk: [lib/integrations/stripe]
+  server_actions: [lib/actions]
+  cache_invalidation: [lib/cache/revalidate.ts]
+  redirects: [lib/actions]
+rules:
+  routes_components_database_access: forbidden
+  routes_components_provider_sdk_access: forbidden
+  provider_webhook_integration_adapter: allowed
+  fetcher_writes: forbidden
+  component_server_actions: forbidden
+  prisma_in_public_types: forbidden
+  action_direct_infrastructure_access: forbidden
+  transaction_ui_or_provider_behavior: forbidden
+  unexpected_action_error_swallowing: forbidden
+  server_only_guards: required
+expected_errors:
+  representation: lib/errors/expectedActionError.ts
+  public_result: types/actionResultTypes.ts
+  unexpected_behavior: rethrow
+verification:
+  command: pnpm architecture:validate
+  validator: scripts/validate-architecture.mjs
+  fixtures: tests/contract/architecture-validator.test.ts

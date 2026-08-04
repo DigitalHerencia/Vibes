@@ -43,7 +43,7 @@ describe("optional Stripe Connect boundaries", () => {
     expect(actions).not.toMatch(
       /amountMinor|currency|platformFee|accountId|chargesEnabled|payoutsEnabled/
     )
-    expect(actions).toContain("connectResourceIdSchema.parse(paymentId)")
+    expect(actions).toContain("connectResourceIdSchema.safeParse(paymentId)")
     const policy = read("lib/connect/policy.ts")
     expect(policy).toContain('getRequiredEnv("STRIPE_CONNECT_CURRENCY")')
     expect(policy).toContain('integerEnv("STRIPE_CONNECT_PLATFORM_FEE_BPS"')

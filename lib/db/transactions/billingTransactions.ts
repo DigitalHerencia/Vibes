@@ -1,6 +1,7 @@
+import "server-only"
+
 import type { Prisma } from "@/prisma/generated/prisma/client"
 
-import { statusGrantsCoreEntitlement } from "@/lib/integrations/stripe/subscriptionStatus"
 import type { StripeSubscriptionSnapshot } from "@/types/billingTypes"
 import type { WebhookClaim } from "@/lib/db/transactions/webhookTransactions"
 
@@ -45,6 +46,7 @@ export async function applyStripeSubscriptionSnapshotTx(
     billingCustomerId: string
     snapshot: StripeSubscriptionSnapshot
     claim: Extract<WebhookClaim, { kind: "claimed" }>
+    entitlementActive: boolean
     now: Date
   }
 ): Promise<"processed" | "ignored"> {
@@ -109,11 +111,11 @@ export async function applyStripeSubscriptionSnapshotTx(
       organizationId: input.organizationId,
       billingSubscriptionId: subscription.id,
       key: "core",
-      active: statusGrantsCoreEntitlement(input.snapshot.status),
+      active: input.entitlementActive,
     },
     update: {
       billingSubscriptionId: subscription.id,
-      active: statusGrantsCoreEntitlement(input.snapshot.status),
+      active: input.entitlementActive,
     },
   })
   await tx.auditEvent.create({

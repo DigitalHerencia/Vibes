@@ -6,6 +6,7 @@ import { compareBillingState } from "@/lib/billing/billingState"
 import { upsertBillingCustomerTx } from "@/lib/db/transactions/billingTransactions"
 import { withTenantContext } from "@/lib/db/withTenantContext"
 import { getOptionalEnv, getRequiredEnv } from "@/lib/env"
+import { ExpectedActionError } from "@/lib/errors/expectedActionError"
 import {
   stripeBillingProvider,
   type StripeBillingProvider,
@@ -76,7 +77,10 @@ export async function createCheckoutSessionWorkflow(options: BillingWorkflowOpti
     })
   )
   if (existing && existing.status !== "canceled" && existing.status !== "incomplete_expired") {
-    throw new Error("Manage the existing subscription in the billing portal.")
+    throw new ExpectedActionError(
+      "BILLING_SUBSCRIPTION_EXISTS",
+      "Manage the existing subscription in the billing portal."
+    )
   }
 
   const appUrl = applicationUrl()
@@ -99,7 +103,12 @@ export async function createBillingPortalSessionWorkflow(options: BillingWorkflo
   const customer = await withTenantContext(context.organization.id, (tx) =>
     tx.billingCustomer.findUnique({ where: { organizationId: context.organization.id } })
   )
-  if (!customer) throw new Error("A billing customer does not exist for this organization.")
+  if (!customer) {
+    throw new ExpectedActionError(
+      "BILLING_CUSTOMER_MISSING",
+      "Start Checkout before opening the billing portal."
+    )
+  }
 
   return provider.createPortalSession({
     customerId: customer.stripeCustomerId,

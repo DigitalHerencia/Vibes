@@ -1,8 +1,9 @@
 import "server-only"
 
 import { getProjectListState } from "@/lib/fetchers/projectFetchers"
+import type { DashboardStateDTO } from "@/types/projectTypes"
 
-export async function getDashboardState() {
+export async function getDashboardState(): Promise<DashboardStateDTO> {
   const projectState = await getProjectListState()
 
   return {

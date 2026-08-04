@@ -8,6 +8,16 @@ export type ConnectAccountSnapshot = {
   disabledReason: string | null
 }
 
+export type ConnectReadinessDTO = {
+  status: "pending" | "restricted" | "ready"
+  detailsSubmitted: boolean
+  chargesEnabled: boolean
+  payoutsEnabled: boolean
+  requirementsDueCount: number
+  disabledReason: string | null
+  providerUpdatedAt: string
+} | null
+
 export type ConnectPaymentStatus =
   | "requires_payment_method"
   | "requires_confirmation"

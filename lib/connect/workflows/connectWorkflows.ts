@@ -7,6 +7,7 @@ import {
   connectCountry,
   deriveConnectPaymentTerms,
 } from "@/lib/connect/policy"
+import { connectAccountStatus } from "@/lib/connect/status"
 import {
   applyConnectAccountSnapshotTx,
   applyConnectPaymentSnapshotTx,
@@ -19,6 +20,7 @@ import {
   stripeConnectProvider,
   type StripeConnectProvider,
 } from "@/lib/integrations/stripe/connect"
+import { ExpectedActionError } from "@/lib/errors/expectedActionError"
 
 type ConnectWorkflowOptions = {
   provider?: StripeConnectProvider
@@ -46,13 +48,17 @@ async function requireManagedConnectAccount(
       applyConnectAccountSnapshotTx(tx, {
         organizationId: context.organization.id,
         snapshot,
+        status: connectAccountStatus(snapshot),
         operation: "onboarding",
         now,
       })
     )
   }
   if (requireReady && account.status !== "ready") {
-    throw new Error("Stripe connected account is not ready for charges and payouts.")
+    throw new ExpectedActionError(
+      "CONNECT_ACCOUNT_NOT_READY",
+      "Complete connected-account onboarding before accepting payments."
+    )
   }
   return { context, account }
 }
@@ -117,7 +123,12 @@ export async function captureConnectPaymentWorkflow(
   const provider = options.provider ?? stripeConnectProvider
   const now = options.now ?? new Date()
   const payment = await loadManagedPayment(context.organization.id, paymentId)
-  if (!payment.stripePaymentIntentId) throw new Error("Payment authorization is not available.")
+  if (!payment.stripePaymentIntentId) {
+    throw new ExpectedActionError(
+      "CONNECT_AUTHORIZATION_MISSING",
+      "Payment authorization is not available."
+    )
+  }
   const snapshot = await provider.capturePaymentIntent(
     payment.stripePaymentIntentId,
     payment.connectAccount.stripeAccountId,
@@ -143,7 +154,12 @@ export async function cancelConnectPaymentWorkflow(
   const provider = options.provider ?? stripeConnectProvider
   const now = options.now ?? new Date()
   const payment = await loadManagedPayment(context.organization.id, paymentId)
-  if (!payment.stripePaymentIntentId) throw new Error("Payment authorization is not available.")
+  if (!payment.stripePaymentIntentId) {
+    throw new ExpectedActionError(
+      "CONNECT_AUTHORIZATION_MISSING",
+      "Payment authorization is not available."
+    )
+  }
   const snapshot = await provider.cancelPaymentIntent(
     payment.stripePaymentIntentId,
     payment.connectAccount.stripeAccountId,
@@ -170,7 +186,10 @@ export async function refundConnectPaymentWorkflow(
   const now = options.now ?? new Date()
   const payment = await loadManagedPayment(context.organization.id, paymentId)
   if (!payment.stripePaymentIntentId || !payment.latestChargeId) {
-    throw new Error("Captured Stripe charge is not available for refund.")
+    throw new ExpectedActionError(
+      "CONNECT_CAPTURE_MISSING",
+      "Captured payment is not available for refund."
+    )
   }
   const snapshot = await provider.createFullRefund({
     chargeId: payment.latestChargeId,
@@ -198,7 +217,12 @@ export async function recoverConnectPaymentWorkflow(
   const provider = options.provider ?? stripeConnectProvider
   const now = options.now ?? new Date()
   const payment = await loadManagedPayment(context.organization.id, paymentId)
-  if (!payment.stripePaymentIntentId) throw new Error("Payment authorization is not available.")
+  if (!payment.stripePaymentIntentId) {
+    throw new ExpectedActionError(
+      "CONNECT_AUTHORIZATION_MISSING",
+      "Payment authorization is not available."
+    )
+  }
   const snapshot = await provider.retrievePaymentIntent(
     payment.stripePaymentIntentId,
     payment.connectAccount.stripeAccountId

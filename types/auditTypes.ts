@@ -1,5 +1,3 @@
-import type { Prisma } from "@/prisma/generated/prisma/client"
-
 export type AuditEventName =
   | "organization.created"
   | "organization.invitation.created"
@@ -19,5 +17,5 @@ export type BoundedAuditEvent = {
   organizationId: string
   projectId?: string
   requestId?: string
-  metadata?: Prisma.InputJsonObject
+  metadata?: Record<string, string | number | boolean | null>
 }

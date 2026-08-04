@@ -13,6 +13,7 @@ const contractFiles = [
   ".agents/contracts/product.yaml",
   ".agents/contracts/quality-gates.yaml",
   ".agents/contracts/routes.yaml",
+  ".agents/contracts/server-operations.yaml",
 ]
 
 for (const file of contractFiles) {

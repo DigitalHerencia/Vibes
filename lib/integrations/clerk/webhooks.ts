@@ -1,3 +1,5 @@
+import "server-only"
+
 import { clerkUserWebhookSchema, clerkWebhookEnvelopeSchema } from "@/schemas/clerkWebhookSchemas"
 import type { NormalizedClerkEvent } from "@/types/webhookTypes"
 

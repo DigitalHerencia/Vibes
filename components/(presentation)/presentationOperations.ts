@@ -1,36 +1,11 @@
-"use server"
-
-import {
-  presentationPreviewDocument,
-  presentationPreviewInitialDraft,
-  presentationPreviewTimeline,
-} from "@/components/(presentation)/presentationData"
 import type {
   VouchCreationActionResult,
   VouchCreationDraft,
-  VouchStatusDocumentData,
-  VouchStatusTimelineItem,
-} from "@/components/blocks/status"
-
-export interface StatusPreviewPayload {
-  document: VouchStatusDocumentData
-  timeline: VouchStatusTimelineItem[]
-  initialDraft: Partial<VouchCreationDraft>
-}
-
-export async function fetchStatusPreview(): Promise<StatusPreviewPayload> {
-  // Server boundary stand-in for lib/fetchers: auth, authz, select, map, return DTO.
-  return {
-    document: presentationPreviewDocument,
-    timeline: presentationPreviewTimeline,
-    initialDraft: presentationPreviewInitialDraft,
-  }
-}
+} from "@/types/presentationPreviewTypes"
 
 export async function saveStatusPreviewAmount(
   draft: VouchCreationDraft
 ): Promise<VouchCreationActionResult> {
-  // Server boundary stand-in for schemas + lib/actions fee preview.
   const amountCents = parseAmountCents(draft.amountDollars)
 
   if (amountCents < 500) {
@@ -40,16 +15,12 @@ export async function saveStatusPreviewAmount(
     }
   }
 
-  return {
-    ok: true,
-    data: buildPreviewData(amountCents),
-  }
+  return { ok: true, data: buildPreviewData(amountCents) }
 }
 
 export async function saveStatusPreviewWindow(
   draft: VouchCreationDraft
 ): Promise<VouchCreationActionResult> {
-  // Server boundary stand-in for confirmation-window validation before persistence.
   if (!draft.appointmentStartsAt || !draft.confirmationOpensAt || !draft.confirmationExpiresAt) {
     return {
       ok: false,
@@ -66,16 +37,12 @@ export async function saveStatusPreviewWindow(
     }
   }
 
-  return {
-    ok: true,
-    data: buildPreviewData(parseAmountCents(draft.amountDollars)),
-  }
+  return { ok: true, data: buildPreviewData(parseAmountCents(draft.amountDollars)) }
 }
 
 export async function createStatusPreviewVouch(
   draft: VouchCreationDraft
 ): Promise<VouchCreationActionResult> {
-  // Server boundary stand-in for transaction/write -> audit -> hosted checkout URL.
   if (!draft.disclaimerAccepted) {
     return {
       ok: false,
@@ -104,6 +71,5 @@ function buildPreviewData(amountCents: number) {
 
 function parseAmountCents(value: string) {
   const amount = Number(value.trim().replace(/[$,\s]/g, ""))
-
   return Number.isFinite(amount) ? Math.round(amount * 100) : 0
 }

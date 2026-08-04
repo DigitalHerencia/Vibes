@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  mapStripeSubscriptionStatus,
-  statusGrantsCoreEntitlement,
-} from "@/lib/integrations/stripe/subscriptionStatus"
+import { statusGrantsCoreEntitlement } from "@/lib/billing/entitlements"
+import { mapStripeSubscriptionStatus } from "@/lib/integrations/stripe/subscriptionStatus"
 
 describe("Stripe subscription status mapping", () => {
   it.each([

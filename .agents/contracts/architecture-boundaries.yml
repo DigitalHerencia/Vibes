@@ -148,18 +148,15 @@ owners:
     forbids: [mutations, provider_calls, ui_data_fetching]
   action:
     paths: ["lib/actions/**/*Actions.ts"]
-    owns: [protected_writes]
-    sequence:
+    owns: [thin_public_mutation_adapters]
+    sequence: [validate, delegate_to_workflow, typed_result, optional_redirect]
+    forbids:
       [
-        authenticate,
-        authorize,
-        validate,
-        transaction_or_provider_operation,
-        audit_or_log,
-        revalidate_or_redirect,
-        typed_result,
+        direct_database_access,
+        direct_provider_access,
+        raw_provider_return_to_ui,
+        raw_db_model_return_to_ui,
       ]
-    forbids: [raw_provider_return_to_ui, raw_db_model_return_to_ui]
   fetcher:
     paths: ["lib/fetchers/**/*Fetchers.ts"]
     owns: [protected_reads]
@@ -218,11 +215,9 @@ dependency_rules:
     - "features -> components/blocks"
     - "components/blocks -> components"
     - "components -> components/ui"
-    - "lib/actions -> lib/auth"
-    - "lib/actions -> lib/authz"
+    - "lib/actions -> lib/*/workflows"
     - "lib/actions -> schemas"
-    - "lib/actions -> lib/db/transactions"
-    - "lib/actions -> lib/integrations"
+    - "lib/actions -> types"
     - "lib/fetchers -> lib/auth"
     - "lib/fetchers -> lib/authz"
     - "lib/fetchers -> lib/db/selects"
@@ -242,6 +237,8 @@ dependency_rules:
     - "schemas -> lib/db"
     - "fetchers -> actions"
     - "actions -> React components"
+    - "actions -> lib/db"
+    - "actions -> lib/integrations"
     - "webhooks -> user_session_fetchers"
 
 naming:

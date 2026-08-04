@@ -1,5 +1,6 @@
 import "server-only"
 
+import { statusGrantsCoreEntitlement } from "@/lib/billing/entitlements"
 import { getPrisma } from "@/lib/db/prisma"
 import { applyStripeSubscriptionSnapshotTx } from "@/lib/db/transactions/billingTransactions"
 import {
@@ -68,6 +69,7 @@ export async function reconcileStripeWebhook(
           organizationId: binding.organizationId,
           billingCustomerId: customer.id,
           snapshot,
+          entitlementActive: statusGrantsCoreEntitlement(snapshot.status),
           claim,
           now,
         })

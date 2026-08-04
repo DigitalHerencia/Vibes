@@ -1,3 +1,5 @@
+import "server-only"
+
 import type { Prisma, PrismaClient } from "@/prisma/generated/prisma/client"
 import type { ClaimableProviderEvent, NormalizedClerkUserEvent } from "@/types/webhookTypes"
 
