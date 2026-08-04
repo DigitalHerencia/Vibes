@@ -4,7 +4,7 @@ import { requireTenantContext } from "@/lib/auth/session"
 import { assertCanTransitionProjectStatus, assertCanUpdateProject } from "@/lib/authz/assertions"
 import { canCreateProject } from "@/lib/authz/policies"
 import { revalidateProjectSurfaces } from "@/lib/cache/revalidate"
-import { getPrisma } from "@/lib/db/prisma"
+import { withTenantContext } from "@/lib/db/withTenantContext"
 import {
   createProjectTx,
   transitionProjectStatusTx,
@@ -20,8 +20,7 @@ export async function createProjectWorkflow(input: CreateProjectInput) {
   const context = await requireTenantContext()
   if (!canCreateProject(context)) throw new Error("Project creation denied.")
 
-  const prisma = getPrisma()
-  const project = await prisma.$transaction((tx) =>
+  const project = await withTenantContext(context.organization.id, (tx) =>
     createProjectTx(tx, {
       ...input,
       organizationId: context.organization.id,
@@ -35,8 +34,7 @@ export async function createProjectWorkflow(input: CreateProjectInput) {
 
 export async function updateProjectWorkflow(input: UpdateProjectInput) {
   const context = await requireTenantContext()
-  const prisma = getPrisma()
-  const updated = await prisma.$transaction((tx) =>
+  const updated = await withTenantContext(context.organization.id, (tx) =>
     updateProjectTx(
       tx,
       {
@@ -55,8 +53,7 @@ export async function updateProjectWorkflow(input: UpdateProjectInput) {
 export async function transitionProjectStatusWorkflow(input: unknown) {
   const parsed = transitionProjectStatusSchema.parse(input)
   const context = await requireTenantContext()
-  const prisma = getPrisma()
-  const project = await prisma.$transaction((tx) =>
+  const project = await withTenantContext(context.organization.id, (tx) =>
     transitionProjectStatusTx(
       tx,
       {

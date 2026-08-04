@@ -3,7 +3,7 @@ import "server-only"
 import { requireCurrentUserContext, requireTenantContext } from "@/lib/auth/session"
 import { assertCanManageMembership } from "@/lib/authz/assertions"
 import { canCreateInvitation } from "@/lib/authz/policies"
-import { getPrisma } from "@/lib/db/prisma"
+import { withTenantContext } from "@/lib/db/withTenantContext"
 import {
   changeMembershipTx,
   createOrganizationInvitationTx,
@@ -20,10 +20,14 @@ const invitationLifetimeMs = 7 * 24 * 60 * 60 * 1000
 export async function createOrganizationWorkflow(input: unknown) {
   const parsed = createOrganizationSchema.parse(input)
   const context = await requireCurrentUserContext()
-  const prisma = getPrisma()
+  const organizationId = crypto.randomUUID()
 
-  return prisma.$transaction((tx) =>
-    createOrganizationTx(tx, { ...parsed, actorUserId: context.localUser.id })
+  return withTenantContext(organizationId, (tx) =>
+    createOrganizationTx(tx, {
+      ...parsed,
+      organizationId,
+      actorUserId: context.localUser.id,
+    })
   )
 }
 
@@ -32,8 +36,7 @@ export async function inviteOrganizationMemberWorkflow(input: unknown) {
   const context = await requireTenantContext()
   if (!canCreateInvitation(context, parsed.role)) throw new Error("Invitation denied.")
 
-  const prisma = getPrisma()
-  return prisma.$transaction((tx) =>
+  return withTenantContext(context.organization.id, (tx) =>
     createOrganizationInvitationTx(tx, {
       ...parsed,
       organizationId: context.organization.id,
@@ -46,9 +49,8 @@ export async function inviteOrganizationMemberWorkflow(input: unknown) {
 export async function updateMembershipWorkflow(input: unknown) {
   const parsed = updateMembershipSchema.parse(input)
   const context = await requireTenantContext()
-  const prisma = getPrisma()
-
-  return prisma.$transaction(
+  return withTenantContext(
+    context.organization.id,
     (tx) =>
       changeMembershipTx(
         tx,

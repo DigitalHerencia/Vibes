@@ -87,7 +87,7 @@ Authorization is local and row-backed:
 - `Project` remains a removable tenant-owned sample resource, never the tenant itself.
 - Fetchers and workflows derive tenant context from local membership, enforce resource/workflow policies, write through transactions, audit, and revalidate.
 
-The Prisma model is intentionally ahead of migration history in Issue #5. Issue #6 owns the migration baseline, restricted runtime role, tenant context, RLS policies, and real-database containment proof; no application-only authorization claim should be read as PostgreSQL containment.
+The committed Prisma baseline creates a non-login `vibes_runtime` privilege role, explicit grants, and forced tenant RLS policies. Runtime code sets `app.current_organization_id` transaction-locally through `lib/db/withTenantContext.ts`; missing context fails closed. `pnpm test:database-security` replays the migration in ephemeral PostgreSQL and executes direct containment attacks. Live runtime-login provisioning and production migration remain owner-controlled deployment gates.
 
 ## Architecture Rule
 
@@ -128,11 +128,13 @@ pnpm validate:release
 
 Database mutation commands remain explicit: `pnpm db:migrate` creates development migrations, `pnpm db:deploy` applies committed migrations, and `pnpm db:seed` runs the configured seed. Never run them against production without an approved deployment gate.
 
+Use a pooled restricted-role URL for `DATABASE_URL` and a direct migration-owner URL for `DIRECT_DATABASE_URL`. The runtime login must inherit `vibes_runtime`; it must not own protected tables or receive `BYPASSRLS`.
+
 ## Pull-request CI
 
 Pull requests run the same credential-free `pnpm validate:ci` contract after a frozen install. Repository secret scanning remains a separate read-only workflow so failures stay attributable.
 
-Coverage thresholds, visual suites, full Playwright matrices, real-database attack tests, deployment, and migrations are intentionally not pull-request gates yet. They remain explicit later release work under `pnpm validate:release`, provider-specific verification, or an owner-authorized deployment plan.
+Coverage thresholds, visual suites, full Playwright matrices, deployment, and production migrations are intentionally not pull-request gates yet. Real-database containment remains an explicit focused gate under `pnpm test:database-security`; the other expensive/provider-specific work stays under `pnpm validate:release` or an owner-authorized deployment plan.
 
 ## Mock Pages
 

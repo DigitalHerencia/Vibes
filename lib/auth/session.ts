@@ -3,7 +3,8 @@ import "server-only"
 import { auth, currentUser } from "@clerk/nextjs/server"
 
 import { getPrisma } from "@/lib/db/prisma"
-import { deriveTenantContext } from "@/lib/authz/tenant"
+import { withTenantContext } from "@/lib/db/withTenantContext"
+import { deriveTenantContext, type TenantMembershipRecord } from "@/lib/authz/tenant"
 import type { AuthenticatedUserContext, LocalUserContext } from "@/types/authTypes"
 import type { TenantContext } from "@/types/authzTypes"
 
@@ -97,26 +98,38 @@ export async function requireTenantContext(): Promise<TenantContext> {
     where: { id: context.localUser.id },
     select: {
       selectedOrganizationId: true,
-      memberships: {
-        select: {
-          id: true,
-          userId: true,
-          role: true,
-          createdAt: true,
-          organization: {
-            select: {
-              id: true,
-              status: true,
-            },
-          },
-        },
-      },
     },
   })
 
-  const tenant = user
-    ? deriveTenantContext(context, user.memberships, user.selectedOrganizationId)
-    : null
+  if (!user?.selectedOrganizationId) {
+    throw new Error("Active organization membership required.")
+  }
+  const organizationId = user.selectedOrganizationId
+
+  const membership = await withTenantContext<TenantMembershipRecord | null>(organizationId, (tx) =>
+    tx.membership.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId,
+          userId: context.localUser.id,
+        },
+      },
+      select: {
+        id: true,
+        userId: true,
+        role: true,
+        createdAt: true,
+        organization: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+    })
+  )
+
+  const tenant = membership ? deriveTenantContext(context, [membership], organizationId) : null
 
   if (!tenant) throw new Error("Active organization membership required.")
   return tenant

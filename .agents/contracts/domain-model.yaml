@@ -23,7 +23,6 @@ tenant:
   selected_name: Organization
   project_is_tenant: false
   context_source: server-derived local membership
-  rls_implemented: false
+  rls_implemented: true
 known_gaps:
-  - migration baseline, restricted runtime role, and tenant-scoped RLS are deferred to Issue 6
   - authenticated provider fixtures and hardened identity synchronization are deferred to Issue 7
