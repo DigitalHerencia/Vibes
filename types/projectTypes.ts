@@ -1,20 +1,21 @@
-export type ProjectRole = "owner" | "member" | "viewer"
+import type { OrganizationRole } from "@/types/authzTypes"
 
-export type ProjectMembershipDTO = {
+export type OrganizationMembershipDTO = {
   id: string
   userId: string
   email: string | null
   displayName: string | null
-  role: ProjectRole
+  role: OrganizationRole
   createdAt: string
 }
 
 export type ProjectSummaryDTO = {
   id: string
+  organizationId: string
   name: string
   slug: string
   description: string | null
-  role: ProjectRole
+  role: OrganizationRole
   status: "active" | "archived"
   updatedAt: string
 }
@@ -22,7 +23,7 @@ export type ProjectSummaryDTO = {
 export type ProjectDetailDTO = ProjectSummaryDTO & {
   ownerId: string
   createdAt: string
-  memberships: ProjectMembershipDTO[]
+  memberships: OrganizationMembershipDTO[]
 }
 
 export type ProjectListStateDTO = {

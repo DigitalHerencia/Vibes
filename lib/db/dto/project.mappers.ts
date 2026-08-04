@@ -1,20 +1,20 @@
 import type { Prisma } from "@/prisma/generated/prisma/client"
 
+import { projectDetailSelect, projectSummarySelect } from "@/lib/db/selects/project.selects"
 import type {
+  OrganizationMembershipDTO,
   ProjectDetailDTO,
-  ProjectMembershipDTO,
-  ProjectRole,
   ProjectSummaryDTO,
 } from "@/types/projectTypes"
-import { projectDetailSelect, projectSummarySelect } from "@/lib/db/selects/project.selects"
+import type { OrganizationRole } from "@/types/authzTypes"
 
 type ProjectSummaryRecord = Prisma.ProjectGetPayload<{ select: typeof projectSummarySelect }>
 type ProjectDetailRecord = Prisma.ProjectGetPayload<{ select: typeof projectDetailSelect }>
 
 function roleForUser(
-  memberships: Array<{ userId: string; role: ProjectRole }>,
+  memberships: Array<{ userId: string; role: OrganizationRole }>,
   userId: string
-): ProjectRole {
+): OrganizationRole {
   return memberships.find((membership) => membership.userId === userId)?.role ?? "viewer"
 }
 
@@ -24,18 +24,19 @@ export function mapProjectSummaryDTO(
 ): ProjectSummaryDTO {
   return {
     id: project.id,
+    organizationId: project.organizationId,
     name: project.name,
     slug: project.slug,
     description: project.description,
     status: project.status,
-    role: roleForUser(project.memberships, userId),
+    role: roleForUser(project.organization.memberships, userId),
     updatedAt: project.updatedAt.toISOString(),
   }
 }
 
-function mapProjectMembershipDTO(
-  membership: ProjectDetailRecord["memberships"][number]
-): ProjectMembershipDTO {
+function mapOrganizationMembershipDTO(
+  membership: ProjectDetailRecord["organization"]["memberships"][number]
+): OrganizationMembershipDTO {
   return {
     id: membership.id,
     userId: membership.user.id,
@@ -52,13 +53,14 @@ export function mapProjectDetailDTO(
 ): ProjectDetailDTO {
   return {
     id: project.id,
+    organizationId: project.organizationId,
     ownerId: project.ownerId,
     name: project.name,
     slug: project.slug,
     description: project.description,
     status: project.status,
     role: roleForUser(
-      project.memberships.map((membership) => ({
+      project.organization.memberships.map((membership) => ({
         userId: membership.user.id,
         role: membership.role,
       })),
@@ -66,6 +68,6 @@ export function mapProjectDetailDTO(
     ),
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
-    memberships: project.memberships.map(mapProjectMembershipDTO),
+    memberships: project.organization.memberships.map(mapOrganizationMembershipDTO),
   }
 }

@@ -1,22 +1,29 @@
 id: vibes.domain-model
-version: 1
+version: 2
 authority: current-source-contract
 current_models:
   - User
+  - Organization
+  - Membership
+  - OrganizationInvitation
   - Project
-  - ProjectMembership
   - AuditEvent
   - ProviderWebhookEvent
 identity:
   provider: clerk
   local_model: User
 authorization:
-  current_scope: project rows
-  membership_model: ProjectMembership
+  current_scope: organization tenant and tenant-owned Project resources
+  membership_model: Membership
+  role_model: OrganizationRole
+  capability_source: lib/authz/capabilities.ts
+  resource_policy_source: lib/authz/policies.ts
 tenant:
   abstraction_required: true
-  selected_name: null
+  selected_name: Organization
   project_is_tenant: false
+  context_source: server-derived local membership
+  rls_implemented: false
 known_gaps:
-  - tenant model and tenant-scoped RLS are not implemented
-  - capability-based RBAC is not implemented
+  - migration baseline, restricted runtime role, and tenant-scoped RLS are deferred to Issue 6
+  - authenticated provider fixtures and hardened identity synchronization are deferred to Issue 7

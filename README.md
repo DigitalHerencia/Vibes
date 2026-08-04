@@ -81,10 +81,13 @@ Clerk identifies the authenticated user. Clerk organizations are intentionally n
 Authorization is local and row-backed:
 
 - `User` stores the local account mapped to `clerkUserId`.
-- `Project` stores owner-owned resources.
-- `ProjectMembership` stores row-scoped roles: `owner`, `member`, `viewer`.
-- Fetchers filter reads by membership.
-- Actions authenticate, authorize, validate, write through transactions, audit, and revalidate.
+- `Organization` is the tenant and future billing boundary.
+- `Membership` joins users to organizations with `owner`, `admin`, `member`, or `viewer` roles; roles aggregate stable capabilities in `lib/authz`.
+- `OrganizationInvitation` stores bounded, expiring invitations without delegating authority to Clerk metadata.
+- `Project` remains a removable tenant-owned sample resource, never the tenant itself.
+- Fetchers and workflows derive tenant context from local membership, enforce resource/workflow policies, write through transactions, audit, and revalidate.
+
+The Prisma model is intentionally ahead of migration history in Issue #5. Issue #6 owns the migration baseline, restricted runtime role, tenant context, RLS policies, and real-database containment proof; no application-only authorization claim should be read as PostgreSQL containment.
 
 ## Architecture Rule
 

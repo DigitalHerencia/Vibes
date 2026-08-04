@@ -59,10 +59,10 @@ Clerk organizations are not used.
 Authorization is enforced through local Prisma-backed rows:
 
 ```txt
-User -> ProjectMembership -> Project
+User -> Membership -> Organization -> Project
 ```
 
-Reads and writes must authenticate through Clerk session state and authorize through local row state before returning DTOs or mutating data.
+Roles aggregate typed capabilities. Reads and writes must authenticate through Clerk session state, derive Organization context from local membership, and authorize resource/workflow state before returning DTOs or mutating data. Project is not the tenant boundary.
 
 ## Mock Pages
 

@@ -9,12 +9,15 @@ describe("project DTO mappers", () => {
     const dto = mapProjectSummaryDTO(
       {
         id: "project_1",
+        organizationId: "organization_1",
         name: "Operations Desk",
         slug: "operations-desk",
         description: null,
         status: "active",
         updatedAt: now,
-        memberships: [{ userId: "user_1", role: "owner" }],
+        organization: {
+          memberships: [{ userId: "user_1", role: "owner" }],
+        },
       },
       "user_1"
     )
@@ -28,6 +31,7 @@ describe("project DTO mappers", () => {
     const dto = mapProjectDetailDTO(
       {
         id: "project_1",
+        organizationId: "organization_1",
         ownerId: "user_1",
         name: "Operations Desk",
         slug: "operations-desk",
@@ -35,18 +39,20 @@ describe("project DTO mappers", () => {
         status: "active",
         createdAt: now,
         updatedAt: now,
-        memberships: [
-          {
-            id: "membership_1",
-            role: "owner",
-            createdAt: now,
-            user: {
-              id: "user_1",
-              email: "owner@example.com",
-              displayName: "Owner",
+        organization: {
+          memberships: [
+            {
+              id: "membership_1",
+              role: "owner",
+              createdAt: now,
+              user: {
+                id: "user_1",
+                email: "owner@example.com",
+                displayName: "Owner",
+              },
             },
-          },
-        ],
+          ],
+        },
       },
       "user_1"
     )

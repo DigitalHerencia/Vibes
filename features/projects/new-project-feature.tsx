@@ -14,7 +14,7 @@ export function NewProjectFeature() {
       <PageHero
         eyebrow="Create project"
         title="Start with ownership."
-        description="The transaction creates the project row, owner membership, and audit event atomically."
+        description="The transaction creates a project inside your active organization and records an audit event."
       />
       <ProjectForm action={createAction} submitLabel="Create project" />
     </div>

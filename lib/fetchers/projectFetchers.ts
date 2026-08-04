@@ -3,7 +3,7 @@ import "server-only"
 import { unstable_noStore as noStore } from "next/cache"
 
 import { assertCanReadProject } from "@/lib/authz/assertions"
-import { requireCurrentUserContext } from "@/lib/auth/session"
+import { requireTenantContext } from "@/lib/auth/session"
 import { mapProjectDetailDTO, mapProjectSummaryDTO } from "@/lib/db/dto/project.mappers"
 import { getPrisma } from "@/lib/db/prisma"
 import { projectDetailSelect, projectSummarySelect } from "@/lib/db/selects/project.selects"
@@ -13,16 +13,12 @@ import type { ProjectDetailDTO, ProjectListStateDTO } from "@/types/projectTypes
 export async function getProjectListState(): Promise<ProjectListStateDTO> {
   noStore()
 
-  const context = await requireCurrentUserContext()
+  const context = await requireTenantContext()
   const prisma = getPrisma()
   const projects = await prisma.project.findMany({
     where: {
       status: "active",
-      memberships: {
-        some: {
-          userId: context.localUser.id,
-        },
-      },
+      organizationId: context.organization.id,
     },
     orderBy: { updatedAt: "desc" },
     take: 24,
@@ -38,12 +34,12 @@ export async function getProjectListState(): Promise<ProjectListStateDTO> {
 export async function getProjectDetailState(projectId: string): Promise<ProjectDetailDTO> {
   noStore()
 
-  const context = await requireCurrentUserContext()
+  const context = await requireTenantContext()
   const parsedProjectId = projectIdSchema.parse(projectId)
   const prisma = getPrisma()
 
-  const project = await prisma.project.findUnique({
-    where: { id: parsedProjectId },
+  const project = await prisma.project.findFirst({
+    where: { id: parsedProjectId, organizationId: context.organization.id },
     select: projectDetailSelect,
   })
 
@@ -51,13 +47,7 @@ export async function getProjectDetailState(projectId: string): Promise<ProjectD
     throw new Error("Project not found.")
   }
 
-  assertCanReadProject(context, {
-    ownerId: project.ownerId,
-    memberships: project.memberships.map((membership) => ({
-      userId: membership.user.id,
-      role: membership.role,
-    })),
-  })
+  assertCanReadProject(context, project)
 
   return mapProjectDetailDTO(project, context.localUser.id)
 }

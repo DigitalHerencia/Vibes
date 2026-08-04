@@ -1,6 +1,6 @@
 import type { Prisma } from "@/prisma/generated/prisma/client"
 
-export const projectMembershipSelect = {
+export const organizationMembershipSelect = {
   id: true,
   role: true,
   createdAt: true,
@@ -11,25 +11,31 @@ export const projectMembershipSelect = {
       displayName: true,
     },
   },
-} satisfies Prisma.ProjectMembershipSelect
+} satisfies Prisma.MembershipSelect
 
 export const projectSummarySelect = {
   id: true,
+  organizationId: true,
   name: true,
   slug: true,
   description: true,
   status: true,
   updatedAt: true,
-  memberships: {
+  organization: {
     select: {
-      userId: true,
-      role: true,
+      memberships: {
+        select: {
+          userId: true,
+          role: true,
+        },
+      },
     },
   },
 } satisfies Prisma.ProjectSelect
 
 export const projectDetailSelect = {
   id: true,
+  organizationId: true,
   ownerId: true,
   name: true,
   slug: true,
@@ -37,8 +43,12 @@ export const projectDetailSelect = {
   status: true,
   createdAt: true,
   updatedAt: true,
-  memberships: {
-    orderBy: { createdAt: "asc" },
-    select: projectMembershipSelect,
+  organization: {
+    select: {
+      memberships: {
+        orderBy: { createdAt: "asc" },
+        select: organizationMembershipSelect,
+      },
+    },
   },
 } satisfies Prisma.ProjectSelect
