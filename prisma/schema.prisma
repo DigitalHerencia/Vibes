@@ -1,0 +1,156 @@
+generator client {
+  provider   = "prisma-client"
+  output     = "./generated/prisma"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+enum ProjectStatus {
+  active
+  archived
+}
+
+enum ProjectRole {
+  owner
+  member
+  viewer
+}
+
+enum AuditActorType {
+  user
+  system
+  clerk
+}
+
+enum WebhookProvider {
+  clerk
+}
+
+enum ProviderWebhookStatus {
+  received
+  processed
+  ignored
+  failed
+}
+
+model User {
+  id          String     @id @default(cuid())
+  clerkUserId String     @unique
+  email       String?    @db.VarChar(320)
+  displayName String?    @db.VarChar(120)
+  status      UserStatus @default(active)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedProjects Project[]           @relation("ProjectOwner")
+  memberships   ProjectMembership[]
+  auditEvents   AuditEvent[]        @relation("AuditActorUser")
+
+  @@index([status])
+  @@index([email])
+  @@map("users")
+}
+
+model Project {
+  id      String @id @default(cuid())
+  ownerId String
+
+  name        String        @db.VarChar(120)
+  slug        String        @unique @db.VarChar(140)
+  description String?       @db.VarChar(500)
+  status      ProjectStatus @default(active)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner       User                @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  memberships ProjectMembership[]
+  auditEvents AuditEvent[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([updatedAt])
+  @@map("projects")
+}
+
+model ProjectMembership {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole @default(viewer)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([role])
+  @@map("project_memberships")
+}
+
+model AuditEvent {
+  id String @id @default(cuid())
+
+  eventName String
+  actorType AuditActorType
+  actorUserId String?
+
+  entityType String
+  entityId   String
+
+  projectId String?
+  requestId String?
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+
+  actorUser User?    @relation("AuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([eventName])
+  @@index([actorType])
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([projectId, createdAt])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+model ProviderWebhookEvent {
+  id String @id @default(cuid())
+
+  provider        WebhookProvider
+  providerEventId String
+  eventType       String
+
+  status    ProviderWebhookStatus @default(received)
+  processed Boolean               @default(false)
+
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  processingError String?
+  safeMetadata    Json?
+
+  @@unique([provider, providerEventId])
+  @@index([provider])
+  @@index([providerEventId])
+  @@index([eventType])
+  @@index([status])
+  @@index([processed])
+  @@index([receivedAt])
+  @@map("provider_webhook_events")
+}

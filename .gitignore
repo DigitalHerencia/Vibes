@@ -1,0 +1,15 @@
+.env
+.env.local
+.env.*.local
+.next/
+coverage/
+dist/
+node_modules/
+out/
+playwright-report/
+test-results/
+prisma/generated/
+*.tsbuildinfo
+
+# clerk configuration (can include secrets)
+/.clerk/
