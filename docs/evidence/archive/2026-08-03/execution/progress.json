@@ -1,0 +1,28 @@
+{
+  "archive_notice": "Legacy record with a 2026-05-16 source date, last archived on 2026-08-03; not current repository evidence.",
+  "source_date": "2026-05-16",
+  "items": [
+    {
+      "id": "UI-001",
+      "status": "completed",
+      "completed": [
+        "Created UI inventory docs",
+        "Created design system standards docs",
+        "Added required Vouch-specific components",
+        "Reworked create Vouch draft and confirm flow UI",
+        "Validated contracts, typecheck, contract tests, and targeted status badge test"
+      ]
+    },
+    {
+      "id": "ISSUE-3",
+      "status": "in_review",
+      "completed": [
+        "Pinned the Node and pnpm toolchain",
+        "Made Prisma generation and validation credential-free",
+        "Canonicalized the Clerk webhook at /api/clerk/webhooks",
+        "Restored unresolved committed UI and block imports",
+        "Passed the credential-free validate:ci gate"
+      ]
+    }
+  ]
+}

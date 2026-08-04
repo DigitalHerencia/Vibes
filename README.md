@@ -1,8 +1,8 @@
 # Next Stack Template
 
-A runnable App Router SaaS starter shaped by the architecture standards in `.agents/`.
+A runnable App Router SaaS starter shaped by accepted ADRs, human-readable architecture governance, and machine-readable contracts.
 
-This template is generic SaaS branded. Vouch remains the source inspiration for the method: strict ownership boundaries, route groups, server-owned operations, transport-safe DTOs, local authorization, and deterministic agent guidance.
+Product-specific examples are preserved under `reference-implementations/` and are non-authoritative.
 
 ## Stack
 
@@ -72,6 +72,8 @@ app/(tenant)/
 app/api/clerk/webhooks     Provider webhook only
 ```
 
+The repository also currently compiles presentation/reference routes from `app/(presentation)` and the `D1`, `pA`-`pC`, and `tA`-`tC` examples. They are accurately recorded as a known isolation gap in `.agents/contracts/routes.yaml`; ADR-0009 defines the intended boundary without claiming it is already implemented.
+
 ## RBAC Model
 
 Clerk identifies the authenticated user. Clerk organizations are intentionally not used.
@@ -103,7 +105,7 @@ Transactions persist atomically.
 Webhooks reconcile provider events.
 ```
 
-Use the files in `.agents/` as the source of truth for implementation boundaries.
+Start with `AGENTS.md` for source precedence. Accepted decisions live in `docs/adr/`, reusable governance in `context/`, machine-readable current-state contracts in `.agents/contracts/`, and non-universal examples in `reference-implementations/`.
 
 ## Validation
 

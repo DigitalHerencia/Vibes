@@ -167,7 +167,7 @@ owners:
       [authenticate, authorize, minimal_select, map_to_dto, cache_policy, transport_safe_return]
     forbids: [mutation, provider_reconciliation]
   db_client:
-    paths: ["lib/db/client.ts"]
+    paths: ["lib/db/prisma.ts"]
     owns: [server_only_database_client]
     forbids: [client_component_imports, ui_labels, route_rendering]
   db_select:
@@ -175,7 +175,7 @@ owners:
     owns: [minimal_persistence_read_shapes]
     forbids: [ui_labels_by_default, authorization_by_default, mutation]
   dto_mapper:
-    paths: ["lib/mappers/**/*.ts", "lib/dto/**/*.ts"]
+    paths: ["lib/db/dto/**/*.ts"]
     owns: [persistence_to_transport_mapping, provider_to_transport_mapping]
     forbids: [raw_sensitive_payload_leakage]
   transaction:
@@ -183,7 +183,7 @@ owners:
     owns: [atomic_mutation_sequences, idempotent_persistence_mechanics]
     forbids: [react_imports, route_revalidation, ui_rendering]
   provider_adapter:
-    paths: ["lib/providers/**/*.ts", "lib/integrations/**/*.ts"]
+    paths: ["lib/integrations/**/*.ts"]
     owns: [external_sdk_adaptation, provider_payload_normalization]
     forbids: [react_rendering, route_chrome]
   webhook:
@@ -222,13 +222,13 @@ dependency_rules:
     - "lib/actions -> lib/authz"
     - "lib/actions -> schemas"
     - "lib/actions -> lib/db/transactions"
-    - "lib/actions -> lib/providers"
+    - "lib/actions -> lib/integrations"
     - "lib/fetchers -> lib/auth"
     - "lib/fetchers -> lib/authz"
     - "lib/fetchers -> lib/db/selects"
-    - "lib/fetchers -> lib/mappers"
+    - "lib/fetchers -> lib/db/dto"
     - "webhooks -> schemas"
-    - "webhooks -> lib/providers"
+    - "webhooks -> lib/integrations"
     - "webhooks -> lib/db/transactions"
   forbidden:
     - "components -> lib/actions"

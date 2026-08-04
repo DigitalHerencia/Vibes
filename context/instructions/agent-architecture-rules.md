@@ -1,8 +1,6 @@
 # Agent Architecture Rules
 
-Source date: 2026-05-19
-
-These rules are generalized for new Next.js App Router projects using TypeScript, Tailwind CSS v4, shadcn-compatible primitives, Zod, server actions, and a server-only database layer.
+These are the active implementation rules for this reusable Next.js App Router repository. Apply the source precedence in `AGENTS.md` before using them.
 
 ## First Move
 
