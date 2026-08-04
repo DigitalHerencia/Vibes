@@ -25,4 +25,4 @@ tenant:
   context_source: server-derived local membership
   rls_implemented: true
 known_gaps:
-  - authenticated provider fixtures and hardened identity synchronization are deferred to Issue 7
+  - live Clerk configuration and authenticated browser journeys require separate provider-backed verification

@@ -46,7 +46,7 @@ DATABASE_URL
 DIRECT_DATABASE_URL
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 CLERK_SECRET_KEY
-CLERK_WEBHOOK_SECRET
+CLERK_WEBHOOK_SIGNING_SECRET
 NEXT_PUBLIC_APP_URL
 ```
 
@@ -89,6 +89,8 @@ Authorization is local and row-backed:
 
 The committed Prisma baseline creates a non-login `vibes_runtime` privilege role, explicit grants, and forced tenant RLS policies. Runtime code sets `app.current_organization_id` transaction-locally through `lib/db/withTenantContext.ts`; missing context fails closed. `pnpm test:database-security` replays the migration in ephemeral PostgreSQL and executes direct containment attacks. Live runtime-login provisioning and production migration remain owner-controlled deployment gates.
 
+Clerk user synchronization enters only through the public `/api/clerk/webhooks` route. The route uses Clerk's verifier, runtime-validates provider values, and delegates to an atomic shared ledger with `received`, `processing`, `processed`, `ignored`, and `failed` states. Failed claims retry immediately; processing claims become retryable after five minutes. Session helpers are read-only, and local memberships/capabilities—not Clerk metadata—remain authorization truth.
+
 ## Architecture Rule
 
 ```txt
@@ -118,7 +120,10 @@ pnpm db:validate
 pnpm validate:fast
 pnpm validate
 pnpm validate:ci
+pnpm test:database-security
 ```
+
+Authenticated Playwright suites can import `authenticatedTest` from `tests/e2e/fixtures/authenticated.ts` and select `owner`, `admin`, `member`, `viewer`, or `disabled`. These provider-backed fixtures require the matching `E2E_CLERK_*_EMAIL` variables plus Clerk development credentials; they are not part of credential-free PR validation.
 
 `pnpm validate:ci` is the credential-free clean-clone gate. Run the release gate only when a test environment has real provider credentials:
 

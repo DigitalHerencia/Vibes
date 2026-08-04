@@ -4,7 +4,7 @@ type RuntimeEnv = {
   databaseUrl: string
   appUrl: string
   clerkSecretKey: string | undefined
-  clerkWebhookSecret: string | undefined
+  clerkWebhookSigningSecret: string | undefined
 }
 
 export function getRequiredEnv(name: string): string {
@@ -30,6 +30,6 @@ export function getRuntimeEnv(): RuntimeEnv {
         ? `https://${getOptionalEnv("VERCEL_URL")}`
         : "http://localhost:3000"),
     clerkSecretKey: getOptionalEnv("CLERK_SECRET_KEY"),
-    clerkWebhookSecret: getOptionalEnv("CLERK_WEBHOOK_SECRET"),
+    clerkWebhookSigningSecret: getOptionalEnv("CLERK_WEBHOOK_SIGNING_SECRET"),
   }
 }

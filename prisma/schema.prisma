@@ -49,6 +49,7 @@ enum WebhookProvider {
 
 enum ProviderWebhookStatus {
   received
+  processing
   processed
   ignored
   failed
@@ -61,6 +62,7 @@ model User {
   displayName            String?    @db.VarChar(120)
   status                 UserStatus @default(active)
   selectedOrganizationId String?
+  identityProviderUpdatedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -197,16 +199,18 @@ model ProviderWebhookEvent {
   id String @id @default(cuid())
 
   provider        WebhookProvider
-  providerEventId String
-  eventType       String
+  providerEventId String @db.VarChar(255)
+  eventType       String @db.VarChar(120)
 
-  status    ProviderWebhookStatus @default(received)
-  processed Boolean               @default(false)
+  status       ProviderWebhookStatus @default(received)
+  attemptCount Int                   @default(0)
 
-  receivedAt  DateTime  @default(now())
-  processedAt DateTime?
+  receivedAt         DateTime  @default(now())
+  lastAttemptAt      DateTime?
+  processingStartedAt DateTime?
+  processedAt        DateTime?
 
-  processingError String?
+  processingError String? @db.VarChar(500)
   safeMetadata    Json?
 
   @@unique([provider, providerEventId])
@@ -214,7 +218,7 @@ model ProviderWebhookEvent {
   @@index([providerEventId])
   @@index([eventType])
   @@index([status])
-  @@index([processed])
+  @@index([status, processingStartedAt])
   @@index([receivedAt])
   @@map("provider_webhook_events")
 }
