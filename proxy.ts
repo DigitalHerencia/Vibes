@@ -1,6 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 
+import { isPresentationCatalogEnabled } from "@/lib/presentation/catalogAccess"
+
 const isPublicRoute = createRouteMatcher([
   "/",
   "/pricing(.*)",
@@ -13,6 +15,30 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 const isAuthRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"])
+
+const isPresentationRoute = createRouteMatcher([
+  "/catalog",
+  "/auth-forms",
+  "/config-page",
+  "/cta-section",
+  "/error-pages",
+  "/faq-section",
+  "/feature-grid",
+  "/hero-section",
+  "/invoice",
+  "/onboarding-flow",
+  "/process-panel",
+  "/settings-page",
+  "/stats-section",
+  "/status",
+  "/D1",
+  "/pA",
+  "/pB",
+  "/pC",
+  "/tA",
+  "/tB",
+  "/tC",
+])
 
 function isInternalRedirect(value: string | null): value is string {
   return !!value && value.startsWith("/") && !value.startsWith("//") && !value.includes("://")
@@ -37,7 +63,7 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL(requestedRedirect(req) ?? "/dashboard", req.url))
   }
 
-  if (isPublicRoute(req)) {
+  if (isPublicRoute(req) || (isPresentationRoute(req) && isPresentationCatalogEnabled())) {
     return NextResponse.next()
   }
 

@@ -6,6 +6,13 @@ auth: ["/sign-in", "/sign-up"]
 protected: ["/dashboard", "/projects", "/projects/new", "/projects/[projectId]", "/settings"]
 api: ["/api/clerk/webhooks", "/api/stripe/webhooks", "/api/stripe/connect/webhooks"]
 reference_catalog:
-  status: currently-exposed
-  route_group: app/(presentation)
-  known_gap: reference catalog is not yet isolated from default production routes
+  status: production-opt-in
+  route_groups:
+    - app/(presentation)
+    - app/(public)/(presentation)
+    - app/(auth)/(presentation)
+    - app/(tenant)/(presentation)
+  index: /catalog
+  production_gate: PRESENTATION_CATALOG_ENABLED
+  search_metadata: content/presentation/registry.ts
+  robots: noindex,nofollow
